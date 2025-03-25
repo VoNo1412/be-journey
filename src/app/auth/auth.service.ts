@@ -23,11 +23,17 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    const user = await this.userService.findUser(body.username);
-    return {
-      ...user,
-      access_token: this.jwtService.sign({payload: user}, {secret: this.configService.get<string>("JWT_SECRET")}),
-    };
+    try {
+      const user = await this.userService.findUser(body.username);
+      const jwt = await this.jwtService.signAsync({payload: user}, {secret: this.configService.get<string>("JWT_SECRET")});
+  
+      return {
+        ...user,
+        access_token: jwt,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async signUp(user: LoginDto) {

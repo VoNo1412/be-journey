@@ -16,6 +16,7 @@ export class TaskController {
   @Get(':userId')
   @ApiOperation({ summary: 'Task from user' })
   findAll(@Param('userId') userId: number) {
+    console.log(userId);
     return this.taskService.getTaskUser(+userId);
   }
 

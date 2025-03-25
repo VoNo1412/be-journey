@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Injectable, Body, Req, UnauthorizedException  } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Injectable, Body, Req, Res, UnauthorizedException, HttpStatus } from '@nestjs/common';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -16,30 +16,36 @@ export class AuthController {
     private readonly jwtService: JwtService
   ) { }
 
-  // @UseGuards(JwtAuthGuard)
-  @Get('cookie')
-  @ApiBearerAuth()
-  async getProfile(@Req() req: Request) {
-    try {
-      const cookie = req.cookies['jwt'];
-      const data = await this.jwtService.verifyAsync(cookie);
-      if (!data) {
-        throw new UnauthorizedException();
-      }
+  @Get('get-cookie')
+  getCookie(@Req() req: Request) {
+    const token = req.cookies['token'];
+    return { token };
+  }
 
-      // const user = await this.
-      return data;
-      
-    } catch (error) {
-      throw new Error(error);
+  @Post('me')
+  async getUser(@Req() req: Request, @Res() res: Response) {
+    const token = req.cookies['token'];
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
+
+    const data = await this.jwtService.verifyAsync(token);
+    return res.json({ user: { ...data.payload } });
+  }
+
+  @Get('clear-cookie')
+  clearCookie(@Res() res: Response) {
+    res.clearCookie('token');
+    res.send('Cookie has been cleared!');
   }
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @ApiBody({ type: LoginDto, description: 'Login payload' })
-  login(@Body() body: LoginDto) {
-    return this.authService.login(body);
+  async login(@Body() body: LoginDto, @Res() res: Response) {
+    const data = await this.authService.login(body);
+    res.cookie('token', data.access_token, { httpOnly: true, secure: false });
+    res.json({ user: { ...data }, statusCode: HttpStatus.OK });
   }
 
   @Post('signup')
