@@ -2,20 +2,23 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly taskService: TaskService) { }
 
   @Post()
   create(@Body() createTaskDto: CreateTaskDto) {
-    return this.taskService.create(createTaskDto);
+    return this.taskService.createUserTask(createTaskDto);
   }
 
-  @Get()
-  findAll() {
-    return this.taskService.findAll();
+  @Get(':userId')
+  @ApiOperation({ summary: 'Task from user' })
+  findAll(@Param('userId') userId: number) {
+    return this.taskService.getTaskUser(+userId);
   }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

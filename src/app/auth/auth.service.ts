@@ -19,15 +19,14 @@ export class AuthService {
     const user = await this.userService.findUser(username);
     const checkPassword = await bcrypt.compare(pass, user.password);
     if(!checkPassword) throw new Error("Password is wrong!")
-      
     return user;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, userId: user.userId };
+  async login(body: LoginDto) {
+    const user = await this.userService.findUser(body.username);
     return {
-      userId: user.userId,
-      access_token: this.jwtService.sign(payload, {secret: this.configService.get<string>("JWT_SECRET")}),
+      ...user,
+      access_token: this.jwtService.sign({payload: user}, {secret: this.configService.get<string>("JWT_SECRET")}),
     };
   }
 

@@ -33,9 +33,15 @@ export class UserService {
 
   async findUser(username: string) {
     const user = await this.userRepository.findOneBy({ name: username });
-    console.log('user: ', user);
     if (!user) throw new Error("User not found");
-
     return user;
+  }
+
+  async findUserById(userId: number) {
+    try {
+      return await this.userRepository.findBy({userId});
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

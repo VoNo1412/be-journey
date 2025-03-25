@@ -6,6 +6,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as cookieParser from 'cookie-parser';
 
 
 async function bootstrap() {
@@ -28,6 +29,8 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  app.use(cookieParser());
   
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup("api", app, document)

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Post, Injectable, Body, SetMetadata } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Injectable, Body, Req, UnauthorizedException  } from '@nestjs/common';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -6,18 +6,34 @@ import { LoginDto } from './dto/login.dto';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-guard.guard';
-
+import { Request, Response } from "express";
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService
+  ) { }
 
   // @UseGuards(JwtAuthGuard)
-  // @Get('profile')
-  // @ApiBearerAuth()
-  // getProfile(@Request() req) {
-  //   return req.user;
-  // }
+  @Get('cookie')
+  @ApiBearerAuth()
+  async getProfile(@Req() req: Request) {
+    try {
+      const cookie = req.cookies['jwt'];
+      const data = await this.jwtService.verifyAsync(cookie);
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      // const user = await this.
+      return data;
+      
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
