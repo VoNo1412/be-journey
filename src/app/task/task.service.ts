@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task, TaskUser } from './entities/task.entity';
@@ -37,12 +37,13 @@ export class TaskService {
 
   async getTaskUser(userId: number): Promise<any> {
     try {
-      const taskUser = await this.taskUserRepository.find({ where: { user: { userId } }, relations: ["task", "user", "category"] })
-      const normalizationData = !taskUser.length ? [] : taskUser.map(x => ({ 
-        taskUserId: x.taskUserId, 
-        title: x.task.title, 
-        isCompleted: x.isCompleted, 
-        categoryId: x.category?.categoryId || null, 
+      const taskUser = await this.taskUserRepository.find({ where: { user: { userId }, deleteAt: IsNull() }, relations: ["task", "user", "category"] })
+      
+      const normalizationData = !taskUser.length ? [] : taskUser.map(x => ({
+        taskUserId: x.taskUserId,
+        title: x.task.title,
+        isCompleted: x.isCompleted,
+        categoryId: x.category?.categoryId || null,
         color: x.category?.color || "black",
         nameCategory: x.category?.name || "other",
       }));
@@ -62,7 +63,7 @@ export class TaskService {
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
-    await this.taskRepository.delete(id);
+  async deleteTaskUser(id: number): Promise<void> {
+    await this.taskUserRepository.delete(id);
   }
 }
