@@ -37,6 +37,15 @@ export class UserService {
     return user;
   }
 
+  async findUsers(username: string) {
+    const users = await this.userRepository.find({ where: {name: username} });
+    if (!users.length) {
+      return []
+    } else {
+      return users;
+    }
+  }
+
   async findUserById(userId: number) {
     try {
       return await this.userRepository.findBy({userId});

@@ -37,6 +37,30 @@ export class TaskUser {
   @ManyToOne(() => User, (user) => user.userId, { nullable: true, onDelete: 'SET NULL' })
   user: User;
 
+  @OneToMany(() => SubTaskUser, (sub) => sub.id, { nullable: true, onDelete: 'SET NULL', cascade: true })
+  subTaskUser: SubTaskUser[];
+
+  @Column({ default: false })
+  isCompleted: boolean;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleteAt: Date;
+}
+
+@Entity()
+export class SubTaskUser {
+  @PrimaryGeneratedColumn('increment')
+  id: number;
+
+  @ManyToOne(() => User, (user) => user.userId, { nullable: true, onDelete: 'SET NULL' })
+  user: User;
+
+  @ManyToOne(() => TaskUser, (tu) => tu.taskUserId, { nullable: true, onDelete: 'SET NULL' })
+  taskUser: TaskUser;
+
   @Column({ default: false })
   isCompleted: boolean;
 

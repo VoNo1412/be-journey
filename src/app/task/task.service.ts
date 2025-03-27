@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Between, IsNull, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task, TaskUser } from './entities/task.entity';
@@ -37,8 +37,23 @@ export class TaskService {
 
   async getTaskUser(userId: number): Promise<any> {
     try {
-      const taskUser = await this.taskUserRepository.find({ where: { user: { userId }, deleteAt: IsNull() }, relations: ["task", "user", "category"] })
-      
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+      const taskUser = await this.taskUserRepository.find({ where: { user: { userId }, deleteAt: IsNull(), createdAt: Between(startOfDay, endOfDay) }, relations: ["task", "user", "category"] })
+
+      function convertToVietnamTime(utcDate: any): string {
+        const date = new Date(utcDate); // Convert to Date object
+
+        // Convert to Vietnam Time (UTC+7)
+        const vietnamOffset = 7 * 60; // 7 hours in minutes
+        const localTime = new Date(date.getTime() + vietnamOffset * 60 * 1000);
+
+        // Format as HH:mm
+        return localTime.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+      }
+
       const normalizationData = !taskUser.length ? [] : taskUser.map(x => ({
         taskUserId: x.taskUserId,
         title: x.task.title,
@@ -46,6 +61,8 @@ export class TaskService {
         categoryId: x.category?.categoryId || null,
         color: x.category?.color || "black",
         nameCategory: x.category?.name || "other",
+        createdAt: x.createdAt,
+        time: convertToVietnamTime(x.createdAt)
       }));
 
       return { status: HttpStatus.OK, data: normalizationData }
