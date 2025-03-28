@@ -11,6 +11,6 @@ export class Category {
   @Column({ type: 'text', nullable: true })
   color: string;
 
-  @OneToMany(() => Task, task => task.taskId)
+  @OneToMany(() => Task, task => task.category)
   tasks: Task[];
 }

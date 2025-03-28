@@ -3,6 +3,7 @@ import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ApiOperation } from '@nestjs/swagger';
+import { CreateSubTaskDto } from './dto/create-subtask';
 
 @Controller('task')
 export class TaskController {
@@ -13,11 +14,15 @@ export class TaskController {
     return this.taskService.createUserTask(createTaskDto);
   }
 
+  @Post("sub")
+  createSubTask(@Body() dto: CreateSubTaskDto) {
+    return this.taskService.createSubTask(dto);
+  }
+
   @Get(':userId')
   @ApiOperation({ summary: 'Task from user' })
   findAll(@Param('userId') userId: number) {
-    console.log(userId);
-    return this.taskService.getTaskUser(+userId);
+    return this.taskService.getTaskByUser(+userId);
   }
 
 
@@ -31,8 +36,8 @@ export class TaskController {
     return this.taskService.update(+id, updateTaskDto);
   }
 
-  @Delete(':taskUserId')
-  remove(@Param('taskUserId') id: number) {
-    return this.taskService.deleteTaskUser(+id);
+  @Delete(':taskId')
+  remove(@Param('taskId') id: number) {
+    return this.taskService.deleteTask(+id);
   }
 }

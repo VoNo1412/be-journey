@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category } from 'src/app/category/entities/category.entity';
-import { SubTaskUser, Task, TaskUser } from 'src/app/task/entities/task.entity';
+import { SubTask, SubTaskUser, Task, TaskUser } from 'src/app/task/entities/task.entity';
 import { User } from 'src/app/user/entities/user.entity';
 
 
@@ -20,7 +20,7 @@ import { User } from 'src/app/user/entities/user.entity';
         password: configService.get<string>('MYSQL_PASSWORD'),
         database: configService.get<string>('MYSQL_DATABASE'),
         // entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        entities: [Task, Category, User, TaskUser, SubTaskUser],
+        entities: [Task, Category, User, TaskUser, SubTaskUser, SubTask],
         synchronize: true,
       }),
     }),
