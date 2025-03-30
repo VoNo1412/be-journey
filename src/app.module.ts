@@ -10,7 +10,10 @@ import { AuthModule } from './app/auth/auth.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ 
+      isGlobal: true,      
+       envFilePath: '.env.local', // Load the env.dev file
+    }),
     UserModule,
     CategoryModule,
     TaskModule,

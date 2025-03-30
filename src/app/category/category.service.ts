@@ -23,8 +23,12 @@ export class CategoryService {
     return await this.categoryRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: number) {
+    try {
+      return await this.categoryRepository.findOne({ where: { id } });
+    } catch (error) {
+      throw new Error(error);     
+    }
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {

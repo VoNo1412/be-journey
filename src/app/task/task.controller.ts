@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -19,16 +19,20 @@ export class TaskController {
     return this.taskService.createSubTask(dto);
   }
 
+  @Delete("sub/:id")
+  deleteSubTask(@Param('id') id: number) {
+    return this.taskService.deleteSubTask(+id);
+  }
+
+  @Put("sub/:id")
+  updateSummarize(@Param('id') id: number, @Body('summarize') summarize: string) {
+    return this.taskService.updateSummarize(+id, summarize);
+  }
+
   @Get(':userId')
   @ApiOperation({ summary: 'Task from user' })
   findAll(@Param('userId') userId: number) {
     return this.taskService.getTaskByUser(+userId);
-  }
-
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(+id);
   }
 
   @Patch(':id')

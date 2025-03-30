@@ -1,13 +1,11 @@
-import { Task, TaskUser } from 'src/app/task/entities/task.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { TaskUser } from 'src/app/task/entities/task_user.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
+import { Entity, Column, OneToMany } from 'typeorm';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn('increment')
-  userId: number;
-
-  @Column({ type: 'text' })
-  name: string;
+export class User extends BaseEntity {
+  @Column({ type: 'varchar', length: 255, unique: true })  // ✅ UNIQUE constraint
+  username: string;
 
   @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
   email: string;
@@ -18,9 +16,6 @@ export class User {
   @Column({ type: 'text', nullable: true })
   avatar: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @OneToMany(() => Task, t => t.user, { nullable: true, cascade: true })
-  task: Task[];
+  @OneToMany(() => TaskUser, (tu) => tu.user)
+  task_user: TaskUser[]; 
 }

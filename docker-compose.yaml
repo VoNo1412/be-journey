@@ -1,19 +1,19 @@
 version: '3.8'
 
 services:
-  db:
-    image: mysql:latest
-    container_name: mysql_db
+  database:
+    image: mysql:8.0
+    container_name: db_journey
+    restart: always
+    env_file:
+      - .env.dev
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: my_database
-      MYSQL_USER: my_user
-      MYSQL_PASSWORD: user_password
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-
+      - mysql_data:/var/lib/mysql
 volumes:
-  db_data:
+  mysql_data:
+
+

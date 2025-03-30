@@ -7,6 +7,10 @@ export class CreateSubTaskDto {
     taskId: number;
 
     @ApiProperty()
+    @IsNumber()
+    userId: number;
+
+    @ApiProperty()
     @IsString()
     title: string;
 

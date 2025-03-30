@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Category } from 'src/app/category/entities/category.entity';
-import { SubTask, SubTaskUser, Task, TaskUser } from 'src/app/task/entities/task.entity';
 import { User } from 'src/app/user/entities/user.entity';
-
 
 @Module({
   imports: [
@@ -19,12 +16,11 @@ import { User } from 'src/app/user/entities/user.entity';
         username: configService.get<string>('MYSQL_USER'),
         password: configService.get<string>('MYSQL_PASSWORD'),
         database: configService.get<string>('MYSQL_DATABASE'),
-        // entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        entities: [Task, Category, User, TaskUser, SubTaskUser, SubTask],
+        entities: ['dist/**/*.entity.js'],
         synchronize: true,
       }),
     }),
   ],
-  exports: [], 
+  exports: [],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

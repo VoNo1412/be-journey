@@ -2,7 +2,7 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LoginDto } from '../auth/dto/login.dto';
 import { hashPassword } from '../auth/config/hashPassword';
@@ -22,23 +22,25 @@ export class UserService {
   async signUp(user: LoginDto): Promise<any> {
     try {
       const newPassword = await hashPassword(user.password);
-      const newUser = this.userRepository.create({ name: user.username, password: newPassword });
+      const newUser = this.userRepository.create({ username: user.username, password: newPassword });
       await this.userRepository.save(newUser);
-      const token = this.jwtService.sign({ payload: {userId: newUser.userId, username: newUser.name} }, { secret: this.configService.get<string>("JWT_SECRET") });
-      return { statusCode: HttpStatus.OK, userId: newUser.userId, accessToken: token }
+      const token = this.jwtService.sign({ payload: { userId: newUser.id, username: newUser.username } }, { secret: this.configService.get<string>("JWT_SECRET") });
+      return { statusCode: HttpStatus.OK, userId: newUser.id, accessToken: token }
     } catch (error) {
       throw new Error(error);
     }
   }
 
   async findUser(username: string) {
-    const user = await this.userRepository.findOneBy({ name: username });
+    const user = await this.userRepository.findOneBy({ username });
     if (!user) throw new Error("User not found");
     return user;
   }
 
   async findUsers(username: string) {
-    const users = await this.userRepository.find({ where: {name: username} });
+    const users = await this.userRepository.find({
+      where: { username: Like(`%${username}%`) },
+    });
     if (!users.length) {
       return []
     } else {
@@ -48,7 +50,7 @@ export class UserService {
 
   async findUserById(userId: number) {
     try {
-      return await this.userRepository.findBy({userId});
+      return await this.userRepository.findOneBy({ id: userId });
     } catch (error) {
       throw new Error(error);
     }

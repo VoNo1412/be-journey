@@ -1,11 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
 export class CreateTaskDto {
-    @ApiProperty()
-    @IsNumber()
-    userId: number;
-
     @ApiProperty()
     @IsString()
     title: string;
@@ -14,6 +10,9 @@ export class CreateTaskDto {
     @IsNumber()
     categoryId: number;
 
-    @ApiProperty({ required: false, isArray: true })
-    assignToId: number[];
+    @ApiProperty()
+    userId: number;
+
+    @ApiProperty({ default: null })
+    assignUserId: number;
 }
