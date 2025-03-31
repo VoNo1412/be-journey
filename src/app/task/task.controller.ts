@@ -14,6 +14,11 @@ export class TaskController {
     return this.taskService.createUserTask(createTaskDto);
   }
 
+  @Get('sub/:userId')
+  getAllSubTasks(@Param('userId') userId: number) {
+    return this.taskService.getAllSubTask(userId);
+  }
+
   @Post("sub")
   createSubTask(@Body() dto: CreateSubTaskDto) {
     return this.taskService.createSubTask(dto);

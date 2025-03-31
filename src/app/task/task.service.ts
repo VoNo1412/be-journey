@@ -23,6 +23,31 @@ export class TaskService {
     private readonly categoryService: CategoryService
   ) { }
 
+  async getAllSubTask(userId: number) {
+    const subtasks = await this.taskUserRepository.createQueryBuilder('task_user')
+      .innerJoin('task_user.task', 'task') // Join with the task
+      .leftJoinAndSelect('task.subtask', 'sub_task') // Join with subtasks
+      .where("task_user.userId = :userId", { userId })
+      .select([
+        'sub_task.id',
+        'sub_task.title',
+        'sub_task.description',
+        'sub_task.status',
+        'task_user.id', // Include task_user ID or any other necessary field
+        'task.id', // Include task ID or any other necessary field
+        'sub_task.createdAt'
+      ])
+      .getMany();
+
+    // Extracting only the subtasks from the result
+    const allSubTasks = subtasks.flatMap(taskUser => taskUser?.task?.subtask);
+    allSubTasks.forEach((x: any) => {
+      x["time"] = convertToVietnamTime(x.createdAt)
+      delete x.createdAt
+    })
+    return { status: HttpStatus.OK, data: allSubTasks }; // Return only the array of subtasks
+  }
+
   async createSubTask(dto: CreateSubTaskDto) {
     try {
       const { taskId, title, description, userId } = dto;
