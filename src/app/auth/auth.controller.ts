@@ -46,7 +46,7 @@ export class AuthController {
   @ApiBody({ type: LoginDto, description: 'Login payload' })
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const data = await this.authService.login(body);
-    res.cookie('token', data.access_token, { httpOnly: true, secure: this.configService.get('NODE_ENV') == 'dev' ? false : true });
+    res.cookie('token', data.access_token, { httpOnly: true, secure: true });
     res.json({ user: { ...data }, statusCode: HttpStatus.OK });
   }
 

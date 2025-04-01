@@ -13,20 +13,20 @@ export class AuthService {
     private jwtService: JwtService,
     private userService: UserService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.userService.findUser(username);
     const checkPassword = await bcrypt.compare(pass, user.password);
-    if(!checkPassword) throw new Error("Password is wrong!")
+    if (!checkPassword) throw new Error("Password is wrong!")
     return user;
   }
 
   async login(body: LoginDto) {
     try {
       const user = await this.userService.findUser(body.username);
-      const jwt = await this.jwtService.signAsync({payload: user}, {secret: this.configService.get<string>("JWT_SECRET")});
-  
+      const jwt = await this.jwtService.signAsync({ payload: user }, { secret: this.configService.get<string>("JWT_SECRET") });
+
       return {
         ...user,
         access_token: jwt,
@@ -37,6 +37,6 @@ export class AuthService {
   }
 
   async signUp(user: LoginDto) {
-      return await this.userService.signUp(user);
+    return await this.userService.signUp(user);
   }
 }
