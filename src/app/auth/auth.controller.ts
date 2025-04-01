@@ -8,12 +8,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-guard.guard';
 import { Request, Response } from "express";
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService
   ) { }
 
   @Get('get-cookie')
@@ -44,7 +46,7 @@ export class AuthController {
   @ApiBody({ type: LoginDto, description: 'Login payload' })
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const data = await this.authService.login(body);
-    res.cookie('token', data.access_token, { httpOnly: true, secure: false });
+    res.cookie('token', data.access_token, { httpOnly: true, secure: this.configService.get('NODE_ENV') == 'dev' ? false : true });
     res.json({ user: { ...data }, statusCode: HttpStatus.OK });
   }
 

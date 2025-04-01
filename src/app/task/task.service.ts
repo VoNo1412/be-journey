@@ -39,13 +39,19 @@ export class TaskService {
       ])
       .getMany();
 
-    // Extracting only the subtasks from the result
     const allSubTasks = subtasks.flatMap(taskUser => taskUser?.task?.subtask);
-    allSubTasks.forEach((x: any) => {
-      x["time"] = convertToVietnamTime(x.createdAt)
-      delete x.createdAt
-    })
-    return { status: HttpStatus.OK, data: allSubTasks }; // Return only the array of subtasks
+
+    // Use a Map to remove duplicates based on subtask ID
+    const uniqueSubTasks = Array.from(
+      new Map(allSubTasks.map(subtask => [subtask.id, subtask])).values()
+    );
+
+    uniqueSubTasks.forEach((x: any) => {
+      x["time"] = convertToVietnamTime(x.createdAt);
+      delete x.createdAt;
+    });
+
+    return { status: HttpStatus.OK, data: uniqueSubTasks }; // Return only the array of subtasks
   }
 
   async createSubTask(dto: CreateSubTaskDto) {
