@@ -1,10 +1,8 @@
-import { Controller, Get, UseGuards, Post, Injectable, Body, Req, Res, UnauthorizedException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Body, Req, Res, HttpStatus, HttpException } from '@nestjs/common';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiBody } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-guard.guard';
 import { Request, Response } from "express";
 import { JwtService } from '@nestjs/jwt';
@@ -28,17 +26,11 @@ export class AuthController {
   async getUser(@Req() req: Request, @Res() res: Response) {
     const token = req.cookies['token'];
     if (!token) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      throw new HttpException("Token not found", HttpStatus.UNAUTHORIZED);
     }
 
     const data = await this.jwtService.verifyAsync(token);
-    return res.json({ user: { ...data.payload } });
-  }
-
-  @Get('clear-cookie')
-  clearCookie(@Res() res: Response) {
-    res.clearCookie('token');
-    res.send('Cookie has been cleared!');
+    res.json({ user: { ...data.payload } });
   }
 
   @Post('login')
