@@ -6,13 +6,27 @@ services:
     container_name: db_journey
     restart: always
     env_file:
-      - .env.dev
+      - .env.local
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend_journey
+    restart: always
+    depends_on:
+      - database
+    env_file:
+      - .env.local
+    volumes:
+      - .:/app
+    command: npm run start:prod
+
 volumes:
   mysql_data:
 

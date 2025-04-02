@@ -28,9 +28,5 @@ import { LocalStrategy } from './strategies/local.strategy';
 
 
 
-export class AuthModule {
-  constructor(private readonly configService: ConfigService) {
-    console.log("te", this.configService.get<string>('JWT_SECRET'));
-  }
-}
+export class AuthModule {}
 

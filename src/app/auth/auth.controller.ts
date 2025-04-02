@@ -50,12 +50,14 @@ export class AuthController {
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
+    console.log(' run inside here pls')
     return { msg: "Redirecting to Google..." };
   }
 
   @Get('/google/callback')
   @UseGuards(GoogleAuthGuard)
   async callback() {
+    console.log('run inside here')
     return { msg: "duma" };
   }
 }
