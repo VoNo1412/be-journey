@@ -25,7 +25,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://fe-journey.onrender.com'], // Allow frontend URL
+    origin: ['http://localhost:5173', 'https://fe-journey.onrender.com', 'http://3.0.139.123'], // Allow frontend URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -36,7 +36,7 @@ async function bootstrap() {
   SwaggerModule.setup("api", app, document)
 
   await app.init();
-  http.createServer(server).listen(configService.get('PORT'), "0.0.0.0");
+  http.createServer(server).listen(configService.get('PORT'));
   console.log("Server is runing on port : " + configService.get('PORT'))
 
 }
