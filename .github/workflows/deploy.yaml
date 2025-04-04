@@ -14,6 +14,13 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/key_special
+          chmod 600 ~/.ssh/key_special
+          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
+
       - name: Build the project
         run: |
           npm install
