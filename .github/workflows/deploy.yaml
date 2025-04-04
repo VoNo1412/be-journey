@@ -53,6 +53,11 @@ jobs:
           npm install
           
           # Chạy ứng dụng test với PM2 (không ảnh hưởng app chính)
-          pm2 restart nest-app-test || pm2 start dist/main.js --name nest-app-test
+          # Xoá app cũ nếu có
+          pm2 delete nest-app-test || true
+
+          # Chạy lại app với PM2
+          pm2 start dist/main.js --name nest-app-test
           pm2 save
+          pm2 list
           EOF
