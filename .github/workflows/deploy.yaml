@@ -3,27 +3,16 @@ name: NestJS deploy to EC2 (Test)
 on:
   push:
     branches:
-      - test-deploy  # 🔥 Chạy khi push vào nhánh test
+      - test-deploy  # 🔥 Test trên branch này
 
 jobs:
   deploy:
-    name: Deploy NestJS (Test)
+    name: Deploy to backend-journey
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the code
+      - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Setup Node.js & Cache
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies & Build
-        run: |
-          npm ci
-          npm run build
 
       - name: Setup SSH Key
         run: |
@@ -32,22 +21,26 @@ jobs:
           chmod 600 ~/.ssh/key_special
           ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
 
-      - name: Deploy ONLY dist folder to EC2
+      - name: Build the project
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy dist folder to EC2
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
           SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
           REMOTE_HOST: "52.221.208.107"
           REMOTE_USER: "ubuntu"
           SOURCE: "dist/"
-          TARGET: "/home/ubuntu/be-journey-test/dist/"  # 🔥 Chỉ cập nhật `dist/`
+          TARGET: "/home/ubuntu/be-journey"  # 🔥 Deploy thẳng vào backend-journey
 
-      - name: SSH into EC2 and restart app
+      - name: Restart app on EC2
         run: |
           ssh -i ~/.ssh/key_special ubuntu@52.221.208.107 << 'EOF'
-          set -e
-          cd /home/ubuntu/be-journey-test
-
-          # 🔥 Cập nhật biến môi trường từ GitHub Secrets
+          cd /home/ubuntu/be-journey
+          
+          # Cập nhật biến môi trường
           echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
           echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.production
@@ -56,15 +49,8 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
           echo "ENV=production" >> .env.production
 
-          # Kiểm tra nếu dist/main.js không tồn tại
-          if [ ! -f "dist/main.js" ]; then
-            echo "❌ ERROR: dist/main.js not found!"
-            exit 1
-          fi
-
-          # Restart app với PM2
-          pm2 delete nest-app-test || true
-          pm2 start dist/main.js --name nest-app-test --env production
+          # Restart PM2
+          pm2 restart backend-journey || pm2 start dist/main.js --name backend-journey
           pm2 save
           pm2 list
           EOF
