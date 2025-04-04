@@ -55,4 +55,26 @@ export class UserService {
       throw new Error(error);
     }
   }
+
+  async getAllUser() {
+    try {
+      const user = await this.userRepository.find();
+      if (!user.length) return [];
+      return user?.map(x => ({ username: x.username, avatar: x.avatar, status: x.isOnline, lastSeen: x.lastSeen }));
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async setOnline(userId: number): Promise<User | any> {
+    try {
+      return await this.userRepository.save({ id: userId, isOnline: true });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  async setOffline(userId: number): Promise<User> {
+    return await this.userRepository.save({ id: userId, isOnline: false, lastSeen: new Date() });
+  }
 }

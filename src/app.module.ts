@@ -7,18 +7,20 @@ import { TaskModule } from './app/task/task.module';
 import { UserModule } from './app/user/user.module';
 import { CategoryModule } from './app/category/category.module';
 import { AuthModule } from './app/auth/auth.module';
+import { GatewayModule } from './app/gateway/gateway.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
-      isGlobal: true,      
-       envFilePath: '.env.local', // Load the env.dev file
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env.production'], // Load the env.dev file
     }),
     UserModule,
     CategoryModule,
     TaskModule,
     DatabaseModule,
-    AuthModule
+    AuthModule,
+    GatewayModule
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

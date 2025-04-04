@@ -11,4 +11,20 @@ export class UserController {
   async getUserByname(@Query('username') username: string) {
     return await this.userService.findUsers(username);
   }
+
+  @Get('list')
+  async getUsers() {
+    return await this.userService.getAllUser();
+  }
+
+  @Post('online')
+  async setUserOnline(@Body('userId') userId: number) {
+    return await this.userService.setOnline(userId);
+  }
+
+  @Post('offline')
+  async setUserOffline(@Body('userId') userId: number) {
+    return await this.userService.setOffline(userId);
+  }
+
 }

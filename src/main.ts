@@ -31,12 +31,11 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup("api", app, document)
 
   await app.init();
-  http.createServer(server).listen(configService.get('PORT'));
+  http.createServer(server).listen(configService.get('PORT'), '0.0.0.0');
   console.log("Server is runing on port : " + configService.get('PORT'))
 
 }

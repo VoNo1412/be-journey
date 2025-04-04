@@ -7,13 +7,15 @@ import { LocalAuthGuard } from './guards/local-guard.guard';
 import { Request, Response } from "express";
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from '../user/user.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly userService: UserService
   ) { }
 
   @Get('get-cookie')
@@ -39,6 +41,8 @@ export class AuthController {
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const data = await this.authService.login(body);
     res.cookie('token', data.access_token, { httpOnly: true, secure: true });
+    
+    await this.userService.setOnline(data.id);
     res.json({ user: { ...data }, statusCode: HttpStatus.OK });
   }
 

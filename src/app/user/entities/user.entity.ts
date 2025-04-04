@@ -16,6 +16,12 @@ export class User extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   avatar: string;
 
+  @Column({ default: false })
+  isOnline: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastSeen: Date;
+
   @OneToMany(() => TaskUser, (tu) => tu.user)
   task_user: TaskUser[]; 
 }

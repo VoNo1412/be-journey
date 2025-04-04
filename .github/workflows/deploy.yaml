@@ -1,0 +1,51 @@
+name: NestJS deploy to EC2 (Test)
+
+on:
+  push:
+    branches:
+      - test-deploy  # 🔥 Chỉ chạy khi push vào nhánh test
+
+jobs:
+  deploy:
+    name: Deploy NestJS (Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Build the project
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy dist folder to EC2
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
+          REMOTE_HOST: "52.221.208.107"  # Hoặc IP con EC2 TEST nếu có
+          REMOTE_USER: "ubuntu"
+          SOURCE: "dist/"
+          TARGET: "/home/ubuntu/be-journey-test"  # 🔥 Deploy vào thư mục riêng
+
+      - name: SSH into EC2 and restart app
+        run: |
+          ssh -i ~/.ssh/key_special ubuntu@52.221.208.107 << 'EOF'
+          cd /home/ubuntu/be-journey-test  # 🔥 Chạy app trong thư mục test
+          
+          # Tạo file .env.production trên EC2 test
+          echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.production
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.production
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.production
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
+          echo "ENV=production" >> .env.production
+          
+          # Cài đặt dependencies
+          npm install
+          
+          # Chạy ứng dụng test với PM2 (không ảnh hưởng app chính)
+          pm2 restart nest-app-test || pm2 start dist/main.js --name nest-app-test
+          pm2 save
+          EOF

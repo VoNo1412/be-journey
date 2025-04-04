@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -59,7 +59,7 @@ export class TaskService {
       const { taskId, title, description, userId } = dto;
       const task = await this.taskRepository.findOne({ where: { id: taskId } });
       if (!task) {
-        throw new Error('Task not found');
+        throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
       }
       // Check if the task is already completed
       const subTask = this.subTaskRepository.create({
@@ -93,13 +93,13 @@ export class TaskService {
       const { title, categoryId, userId, assignUserId } = createTaskDto;
       const category = await this.categoryService.findOne(categoryId);
       if (!category) {
-        throw new Error('Category not found');
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
       }
       const task = this.taskRepository.create({ title, category });
       const newTask = await this.taskRepository.save(task);
       const user = await this.userService.findUserById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
       const taskUser = this.taskUserRepository.create({
@@ -110,7 +110,7 @@ export class TaskService {
       if (assignUserId) {
         const assignUser = await this.userService.findUserById(assignUserId);
         if (!assignUser) {
-          throw new Error('Assigned user not found');
+          throw new HttpException('Assigned User not found', HttpStatus.NOT_FOUND);
         }
 
         const taskUser = this.taskUserRepository.create({
@@ -125,7 +125,7 @@ export class TaskService {
       const newTaskUser = await this.taskUserRepository.save(taskUser);
       return { statusCode: HttpStatus.OK, data: { ...newTaskUser, taskId: newTask.id, } };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }
   }
 
