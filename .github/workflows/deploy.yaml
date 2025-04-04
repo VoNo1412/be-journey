@@ -55,7 +55,7 @@ jobs:
           echo "ENV=production" >> .env.production
 
           # Restart PM2
-          pm2 restart be-journey
+          pm2 restart backend-journey || pm2 start dist/main.js --name backend-journey
           pm2 save
           pm2 list
           EOF
