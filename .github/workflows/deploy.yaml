@@ -13,7 +13,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-    
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
+          
       - name: Deploy dist folder to EC2
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
