@@ -14,7 +14,6 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
     private readonly userService: UserService
   ) { }
 
@@ -40,7 +39,7 @@ export class AuthController {
   @ApiBody({ type: LoginDto, description: 'Login payload' })
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const data = await this.authService.login(body);
-    res.cookie('token', data.access_token, { httpOnly: true, secure: true });
+    res.cookie('token', data.access_token, { httpOnly: true, secure: false });
     
     await this.userService.setOnline(data.id);
     res.json({ user: { ...data }, statusCode: HttpStatus.OK });
