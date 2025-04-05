@@ -42,8 +42,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
           REMOTE_HOST: "52.221.208.107"
           REMOTE_USER: "ubuntu"
-          SOURCE: "dist/"
-          TARGET: "/home/ubuntu/backend-journey/dist"  # 🔥 Deploy thẳng vào backend-journey
+          SOURCE: "."
+          TARGET: "/home/ubuntu/backend-journey/"  # 🔥 Deploy thẳng vào backend-journey
 
       - name: Restart app on EC2
         run: |
