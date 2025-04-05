@@ -1,9 +1,11 @@
-name: NestJS deploy to EC2
+name: NestJS deploy to EC2 (Test)
+
 
 on:
   push:
     branches:
-      - master  # 🔥 Test trên branch này
+      - master  
+
 
 jobs:
   deploy:

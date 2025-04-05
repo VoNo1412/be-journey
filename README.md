@@ -8,7 +8,7 @@ A fullstack Habit Tracker web application that allows users to track and manage 
 
 - **Frontend:** ReactJS, Redux
 - **Backend:** NestJS, TypeORM
-- **Database:** PostgreSQL (via TypeORM)
+- **Database:** MySQL (via TypeORM)
 - **Containerization:** Docker
 - **Cloud Hosting:** AWS EC2
 - **Process Management:** PM2
@@ -20,7 +20,7 @@ A fullstack Habit Tracker web application that allows users to track and manage 
 - **Task Management:** 
   - Users can create tasks, set deadlines, assign priorities, and assign tasks to other users.
   - Admin or project managers can assign tasks to specific users.
-  - Users can track their assigned tasks, mark them as in progress, and complete them.
+  - Users can track their assigned tasks, mark them as in progress, and complete the
   
 - **API Integration:**
   - RESTful API endpoints are created with NestJS, ensuring efficient task and habit management.
@@ -47,7 +47,7 @@ Before running the project locally, ensure you have the following installed:
 
 - Node.js (v14.x or higher)
 - Docker (for containerization)
-- PostgreSQL (for database)
+- MySQL (for database)
 - AWS account (for EC2 and deployment)
 
 ### Installation
