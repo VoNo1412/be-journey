@@ -14,11 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.14.0'  # Cài đặt Node.js version 22.14.0
-          cache: 'npm'
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: '22.14.0'  # Cài đặt Node.js version 22.14.0
+      #     cache: 'npm'
 
 
       - name: Setup SSH Key
@@ -28,37 +28,37 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -v -H 52.221.208.107 >> ~/.ssh/known_hosts
 
-      - name: Build the project
-        run: |
-          npm install
-          npm run build
+      # - name: Build the project
+      #   run: |
+      #     npm install
+      #     npm run build
 
-      - name: Deploy dist folder to EC2
-        uses: easingthemes/ssh-deploy@v2.1.5
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
-          REMOTE_HOST: "52.221.208.107"
-          REMOTE_USER: "ubuntu"
-          SOURCE: "dist/"
-          TARGET: "/home/ubuntu/backend-journey/dist"  # 🔥 Deploy thẳng vào backend-journey
-          SCRIPT_AFTER: |
-            touch .env.production
-            echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
-            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
-            echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.production
-            echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.production
-            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.production
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
-            echo "ENV=production" >> .env.production
+      # - name: Deploy dist folder to EC2
+      #   uses: easingthemes/ssh-deploy@v2.1.5
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
+      #     REMOTE_HOST: "52.221.208.107"
+      #     REMOTE_USER: "ubuntu"
+      #     SOURCE: "dist/"
+      #     TARGET: "/home/ubuntu/backend-journey/dist"  # 🔥 Deploy thẳng vào backend-journey
+      #     SCRIPT_AFTER: |
+      #       touch .env.production
+      #       echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
+      #       echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
+      #       echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.production
+      #       echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.production
+      #       echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.production
+      #       echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
+      #       echo "ENV=production" >> .env.production
 
-            pm2 describe backend-journey > /dev/null
-            if [ $? -eq 0 ]; then
-              pm2 restart backend-journey
-            else
-              pm2 start dist/main.js --name backend-journey
-            fi
-            pm2 save
-            pm2 list
+      #       pm2 describe backend-journey > /dev/null
+      #       if [ $? -eq 0 ]; then
+      #         pm2 restart backend-journey
+      #       else
+      #         pm2 start dist/main.js --name backend-journey
+      #       fi
+      #       pm2 save
+      #       pm2 list
 
 
       
