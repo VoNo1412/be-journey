@@ -3,29 +3,25 @@ name: NestJS deploy to EC2 (Test)
 on:
   push:
     branches:
-      - test-deploy
+      - test-deploy  # 🔥 Test trên branch này
 
 jobs:
   deploy:
-    name: Deploy to backend-journey EC2
+    name: Deploy to backend-journey
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.14.0'
-          cache: 'npm'
-
-      - name: Install dependencies & build
+      - name: Setup SSH Key
         run: |
-          npm ci
-          npm run build
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
 
-      - name: Create .env.production
+      - name: Create env
         run: |
           echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
@@ -33,40 +29,30 @@ jobs:
           echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.production
           echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.production
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
+          echo "ENV=production" >> .env.production
+          echo "PORT=${{ secrets.PORT }}" >> .env.production
 
-      - name: Zip dist and env file
-        run: |
-          zip -r deploy.zip dist .env.production package.json package-lock.json
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
+      - name: Build the app
+        run: npm run build
 
-      - name: Upload zip to EC2
-        run: |
-          scp -i ~/.ssh/id_rsa deploy.zip ubuntu@52.221.208.107:/home/ubuntu/backend-journey.zip
-
-      - name: SSH into EC2 and deploy
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 << 'EOF'
-          # Navigate to app folder
-          rm -rf backend-journey-temp
-          mkdir backend-journey-temp
-          unzip backend-journey.zip -d backend-journey-temp
+      - name: Move .env.production to dist
+        run: cp .env.production dist/
+    
+      - name: Deploy dist folder to EC2
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
+          REMOTE_HOST: "52.221.208.107"
+          REMOTE_USER: "ubuntu"
+          SOURCE: "dist"
+          TARGET: "/home/ubuntu/backend-journey-test"  # 🔥 Deploy thẳng vào backend-journey
+          SCRIPT_AFTER: |
+            cd /home/ubuntu/backend-journey-test
+            pm2 start dist/main.js --name backend-journey-test || pm2 restart backend-journey-test
+            pm2 list
+            pm2 logs backend-journey-test
+            pm2 save
           
-          # Replace current backend-journey with new one
-          rm -rf backend-journey/dist
-          cp -r backend-journey-temp/dist backend-journey/
-          cp backend-journey-temp/.env.production backend-journey/
-          cp backend-journey-temp/package*.json backend-journey/
-          
-          # Install any updated deps (just in case)
-          cd backend-journey
-          npm ci --omit=dev
-          
-          # Restart app with PM2
-          pm2 start dist/main.js --name backend-journey || pm2 restart backend-journey
-          EOF
