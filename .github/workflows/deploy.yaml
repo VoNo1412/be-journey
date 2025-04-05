@@ -50,9 +50,9 @@ jobs:
           SOURCE: "dist"
           TARGET: "/home/ubuntu/backend-journey-test"  # 🔥 Deploy thẳng vào backend-journey
           SCRIPT_AFTER: |
-            cd /home/ubuntu/backend-journey-test
-            pm2 start dist/main.js --name backend-journey-test || pm2 restart backend-journey-test
-            pm2 list
-            pm2 logs backend-journey-test
-            pm2 save
+              cd /home/ubuntu/backend-journey-test
+              pm2 delete backend-journey-test || true
+              pm2 start dist/main.js --name backend-journey-test
+              pm2 logs backend-journey-test
+              pm2 save
           
