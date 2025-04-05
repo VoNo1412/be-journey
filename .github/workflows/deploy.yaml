@@ -3,11 +3,11 @@ name: NestJS deploy to EC2 (Test)
 on:
   push:
     branches:
-      - test-deploy  # 🔥 Test trên branch này
+      - test-deploy
 
 jobs:
   deploy:
-    name: Deploy to backend-journey
+    name: Deploy to backend-journey EC2
     runs-on: ubuntu-latest
 
     steps:
@@ -17,50 +17,56 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14.0'  # Cài đặt Node.js version 22.14.0
+          node-version: '22.14.0'
           cache: 'npm'
 
-
-      - name: Setup SSH Key
+      - name: Install dependencies & build
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
-
-      - name: Build the project
-        run: |
-          npm install
+          npm ci
           npm run build
-      - name: Create target directory
-        run: |
-            ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 "mkdir -p /home/ubuntu/backend-journey/dist"
 
-      - name: Deploy dist folder to EC2
-        uses: easingthemes/ssh-deploy@v2.1.5
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.BE_AWS_KEY }}
-          REMOTE_HOST: "52.221.208.107"
-          REMOTE_USER: "ubuntu"
-          SOURCE: "."
-          TARGET: "/home/ubuntu/backend-journey/"  # 🔥 Deploy thẳng vào backend-journey
-
-      - name: Restart app on EC2
+      - name: Create .env.production
         run: |
-          ssh -i ~/.ssh/key_special ubuntu@52.221.208.107 << 'EOF'
-          cd /home/ubuntu/backend-journey/
-          touch .env.production
-          # Cập nhật biến môi trường
           echo "DB_HOST=${{ secrets.DB_HOST }}" > .env.production
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
           echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.production
           echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.production
           echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.production
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.production
-          echo "ENV=production" >> .env.production
 
-          # Restart PM2
-          pm2 start dist/main.js --name backend-journey
-          pm2 save
-          pm2 list
+      - name: Zip dist and env file
+        run: |
+          zip -r deploy.zip dist .env.production package.json package-lock.json
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
+
+      - name: Upload zip to EC2
+        run: |
+          scp -i ~/.ssh/id_rsa deploy.zip ubuntu@52.221.208.107:/home/ubuntu/backend-journey.zip
+
+      - name: SSH into EC2 and deploy
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 << 'EOF'
+          # Navigate to app folder
+          rm -rf backend-journey-temp
+          mkdir backend-journey-temp
+          unzip backend-journey.zip -d backend-journey-temp
+          
+          # Replace current backend-journey with new one
+          rm -rf backend-journey/dist
+          cp -r backend-journey-temp/dist backend-journey/
+          cp backend-journey-temp/.env.production backend-journey/
+          cp backend-journey-temp/package*.json backend-journey/
+          
+          # Install any updated deps (just in case)
+          cd backend-journey
+          npm ci --omit=dev
+          
+          # Restart app with PM2
+          pm2 start dist/main.js --name backend-journey || pm2 restart backend-journey
           EOF
