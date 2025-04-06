@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LoginDto } from '../auth/dto/login.dto';
 import { hashPassword } from '../auth/config/hashPassword';
@@ -54,25 +54,21 @@ export class UserService {
     }
   }
 
-  async getAllUser() {
+  async getAllUser(userId: number) {
     try {
-      const user = await this.userRepository.find();
+      const user = await this.userRepository.find({where: { id: Not(userId) }});
       if (!user.length) return [];
-      return user?.map(x => ({ username: x.username, avatar: x.avatar, status: x.isOnline, lastSeen: x.lastSeen }));
+      return user?.map(x => ({ userId: x.id, username: x.username, avatar: x.avatar, status: x.isOnline, lastSeen: x.lastSeen }));
     } catch (error) {
       throw new HttpException(error, HttpStatus.NOT_FOUND);
     }
   }
 
-  async setOnline(userId: number): Promise<User | any> {
+  async setStatus(userId: number, status: boolean): Promise<User | any> {
     try {
-      return await this.userRepository.save({ id: userId, isOnline: true });
+      return await this.userRepository.save({ id: userId, isOnline: status, lastSeen: new Date() });
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_GATEWAY);
     }
-  }
-
-  async setOffline(userId: number): Promise<User> {
-    return await this.userRepository.save({ id: userId, isOnline: false, lastSeen: new Date() });
   }
 }

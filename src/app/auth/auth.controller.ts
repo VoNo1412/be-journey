@@ -40,8 +40,6 @@ export class AuthController {
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const data = await this.authService.login(body);
     res.cookie('token', data.access_token, { httpOnly: true, secure: false });
-    
-    await this.userService.setOnline(data.id);
     res.json({ user: { ...data }, statusCode: HttpStatus.OK });
   }
 

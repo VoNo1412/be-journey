@@ -1,42 +1,36 @@
-name: NestJS deploy to EC2 (Test)
+# name: NestJS deploy to EC2 (Test)
 
 
-on:
-  push:
-    branches:
-      - master  
+# on:
+#   push:
+#     branches:
+#       - master  
 
 
-jobs:
-  deploy:
-    name: Deploy to backend-journey
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     name: Deploy to backend-journey
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
+#       - name: Setup SSH Key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.BE_AWS_KEY }}" > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           ssh-keyscan -H 52.221.208.107 >> ~/.ssh/known_hosts
 
-      - name: Pull latest code from master
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 << 'EOF'
-            cd /home/ubuntu/be-journey
-            git pull origin master
-          EOF
-
-      - name: Deploy dist folder to EC2
-        run: |
-              ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 << 'EOF'
-                cd /home/ubuntu/be-journey
-                npm ci
-                npm run build
-                pm2 delete be-journey
-                pm2 start dist/main.js --name backend-journey-test
-                pm2 save
-              EOF
+#       - name: Deploy dist folder to EC2
+#         run: |
+#               ssh -i ~/.ssh/id_rsa ubuntu@52.221.208.107 << 'EOF'
+#                 cd /home/ubuntu/be-journey
+#                 git pull origin master
+#                 npm ci
+#                 npm run build
+#                 pm2 delete be-journey
+#                 pm2 start dist/main.js --name be-journey
+#                 pm2 save
+#               EOF

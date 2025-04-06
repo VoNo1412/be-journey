@@ -7,6 +7,7 @@ import { TaskModule } from './app/task/task.module';
 import { UserModule } from './app/user/user.module';
 import { CategoryModule } from './app/category/category.module';
 import { AuthModule } from './app/auth/auth.module';
+import { GatewayModule } from './app/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './app/auth/auth.module';
     TaskModule,
     DatabaseModule,
     AuthModule,
+    GatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -12,19 +10,8 @@ export class UserController {
     return await this.userService.findUsers(username);
   }
 
-  @Get('list')
-  async getUsers() {
-    return await this.userService.getAllUser();
+  @Get('list/:userId')
+  async getUsers(@Param('userId') userId: number) {
+    return await this.userService.getAllUser(+userId);
   }
-
-  @Post('online')
-  async setUserOnline(@Body('userId') userId: number) {
-    return await this.userService.setOnline(userId);
-  }
-
-  @Post('offline')
-  async setUserOffline(@Body('userId') userId: number) {
-    return await this.userService.setOffline(userId);
-  }
-
 }
