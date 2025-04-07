@@ -7,8 +7,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UserService } from 'src/app/user/user.service';
 
-@WebSocketGateway(3001, { cors: { origin: "*", transports: ['websocket'] } })
-export class AppGateway  implements OnGatewayConnection, OnGatewayDisconnect {
+@WebSocketGateway(3001, { cors: { origin: "*" }, namespace: "ws" })
+export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
     constructor(private readonly userService: UserService) { }
 
@@ -27,14 +27,14 @@ export class AppGateway  implements OnGatewayConnection, OnGatewayDisconnect {
             this.server.emit('user-status-update', { userId, isOnline: true });
         }
     }
-    
-     /**
-     * 
-     * @param client The disconnected client socket
-     * @description Handles the disconnection event when a client disconnects from the WebSocket server.
-     * Handle disconnections (e.g., browser close, logout) and update last seen time from user logout
-     */
-     handleDisconnect(client: Socket) {
+
+    /**
+    * 
+    * @param client The disconnected client socket
+    * @description Handles the disconnection event when a client disconnects from the WebSocket server.
+    * Handle disconnections (e.g., browser close, logout) and update last seen time from user logout
+    */
+    handleDisconnect(client: Socket) {
         const userId = client.handshake.query.userId;
         if (userId) {
             console.log(`User disconnected: ${userId}`);
@@ -44,6 +44,6 @@ export class AppGateway  implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
 
-    
-    
+
+
 }
