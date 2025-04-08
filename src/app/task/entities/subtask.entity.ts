@@ -17,6 +17,9 @@ export class SubTask extends BaseEntity {
   @Column({ type: 'enum', enum: ['Pending', 'In Progress', 'Completed'], default: 'Pending' })
   status: string;
 
+  @Column({ nullable: true })
+  taskId: number;
+
   @ManyToOne(() => Task, (t) => t.subtask, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'task_id' })
   task: Task;

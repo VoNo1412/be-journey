@@ -1,49 +1,28 @@
-import {
-    WebSocketGateway,
-    WebSocketServer,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-} from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserService } from 'src/app/user/user.service';
+import { UserGateway } from './user/user.gateway';
+import { NotificationGateway } from './notification/notification.gateway';
 
 @WebSocketGateway(3001, { cors: { origin: "*" }, namespace: "ws" })
-export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class AppGateway {
+    constructor(private readonly userGateway: UserGateway,
+        private readonly notificationGateway: NotificationGateway
+
+    ) { }
     @WebSocketServer() server: Server;
-    constructor(private readonly userService: UserService) { }
 
-    /**
-     * @param client The connected client socket
-     * @description Handles the connection event when a client connects to the WebSocket server.
-     * check user online status and emit an event to update the user status.
-     */
     async handleConnection(client: Socket) {
-        console.log(`Client connected: ${client.id}`);
-
-        const userId = client.handshake.query.userId;
-        if (userId) {
-            console.log(`User connected: ${userId}`);
-            await this.userService.setStatus(+userId, true);
-            this.server.emit('user-status-update', { userId, isOnline: true });
-        }
+        this.userGateway.server = this.server; // Assign server instance to UserGateway
+        this.notificationGateway.server = this.server;
+        this.userGateway.handleConnection(client); // Delegate to UserGateway
+        
     }
 
-    /**
-    * 
-    * @param client The disconnected client socket
-    * @description Handles the disconnection event when a client disconnects from the WebSocket server.
-    * Handle disconnections (e.g., browser close, logout) and update last seen time from user logout
-    */
-    handleDisconnect(client: Socket) {
-        const userId = client.handshake.query.userId;
-        if (userId) {
-            console.log(`User disconnected: ${userId}`);
-            this.userService.setStatus(+userId, false); // Mark user as offline
-            this.server.emit('user-status-update', { userId, isOnline: false });
-        }
+    async handleDisconnect(client: Socket) {
+        this.userGateway.server = this.server; // Assign server instance to UserGateway
+        this.notificationGateway.server = this.server;
+        this.userGateway.handleDisconnect(client); // Delegate to UserGateway
     }
 
-
-
-
+    
 }

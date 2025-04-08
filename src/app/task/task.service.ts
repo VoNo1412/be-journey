@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UserService } from '../user/user.service';
@@ -9,8 +9,11 @@ import convertToVietnamTime from 'src/common/time';
 import { Task } from './entities/task.entity';
 import { TaskUser } from './entities/task_user.entity';
 import { SubTask } from './entities/subtask.entity';
-// import { SubTaskUser } from './entities/subtask_user.entity';
 import { CategoryService } from '../category/category.service';
+import { NotificationService } from '../gateway/notification/notification.service';
+import { NotificationType } from '../gateway/notification/entities/notification.entity';
+import { Category } from '../category/entities/category.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class TaskService {
@@ -18,9 +21,9 @@ export class TaskService {
     @InjectRepository(Task) private readonly taskRepository: Repository<Task>,
     @InjectRepository(TaskUser) private readonly taskUserRepository: Repository<TaskUser>,
     @InjectRepository(SubTask) private readonly subTaskRepository: Repository<SubTask>,
-    // @InjectRepository(SubTaskUser) private readonly subTaskUserRepository: Repository<SubTaskUser>,
     private readonly userService: UserService,
-    private readonly categoryService: CategoryService
+    private readonly categoryService: CategoryService,
+    private readonly notificationService: NotificationService,
   ) { }
 
   async getAllSubTask(userId: number) {
@@ -91,35 +94,25 @@ export class TaskService {
   async createUserTask(createTaskDto: CreateTaskDto): Promise<any> {
     try {
       const { title, categoryId, userId, assignUserId } = createTaskDto;
-      const category = await this.categoryService.findOne(categoryId);
-      if (!category) {
-        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-      }
-      const task = this.taskRepository.create({ title, category });
+      const task = this.taskRepository.create({ title, categoryId });
       const newTask = await this.taskRepository.save(task);
-      const user = await this.userService.findUserById(userId);
-      if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
 
       const taskUser = this.taskUserRepository.create({
-        task: newTask,
-        user
+        taskId: newTask.id,
+        userId,
+        assignById: assignUserId
       });
 
-      if (assignUserId) {
-        const assignUser = await this.userService.findUserById(assignUserId);
-        if (!assignUser) {
-          throw new HttpException('Assigned User not found', HttpStatus.NOT_FOUND);
-        }
-
-        const taskUser = this.taskUserRepository.create({
-          task: newTask,
-          user,
-          assignBy: assignUser
-        });
-
-        await this.taskUserRepository.save(taskUser);
+      if (userId && assignUserId) {
+        await this.notificationService.create({
+          taskId: newTask.id,
+          senderId: taskUser.assignById,
+          recipientId: userId,
+          type: NotificationType.TASK_ASSIGNED,
+          isRead: false,
+          title: newTask.title,
+          message: "You have a new task todo"
+        })
       }
 
       const newTaskUser = await this.taskUserRepository.save(taskUser);
@@ -128,6 +121,8 @@ export class TaskService {
       throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }
   }
+
+
 
   async getTaskByUser(userId: number): Promise<any> {
     try {
@@ -143,6 +138,7 @@ export class TaskService {
         .getMany();
 
       const normalizedData = tasks.map(task => this.normalizeTask(task, userId));
+
       return { status: HttpStatus.OK, data: normalizedData };
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -180,7 +176,11 @@ export class TaskService {
   }
 
   async findOne(taskId: number): Promise<any> {
-    return this.taskRepository.findOne({ where: { id: taskId } });
+    try {
+      return this.taskRepository.findOne({ where: { id: taskId } });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.NOT_FOUND);
+    }
   }
 
   async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {

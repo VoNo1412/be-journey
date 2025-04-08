@@ -7,12 +7,14 @@ import { Task } from './entities/task.entity';
 import { TaskUser } from './entities/task_user.entity';
 import { SubTask } from './entities/subtask.entity';
 import { CategoryModule } from '../category/category.module';
+import { NotificationModule } from '../gateway/notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task, TaskUser, SubTask]),
     UserModule,
-    CategoryModule
+    CategoryModule,
+    NotificationModule
   ],
   controllers: [TaskController],
   providers: [TaskService],

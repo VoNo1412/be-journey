@@ -17,14 +17,14 @@ export class Notification extends BaseEntity {
     @Column({ nullable: false })
     taskId: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: true })
     subTaskId: number;
-
-    @ManyToOne(() => User)
-    sender: User;
+    
+    @Column()
+    senderId: number;
   
-    @ManyToOne(() => User)
-    recipient: User;  
+    @Column()
+    recipientId: number;  
 
     @Column({ type: 'enum', enum: NotificationType })
     type: NotificationType;

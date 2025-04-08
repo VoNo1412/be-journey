@@ -50,7 +50,7 @@ export class UserService {
     try {
       return await this.userRepository.findOneBy({ id: userId });
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.NOT_FOUND);
     }
   }
 

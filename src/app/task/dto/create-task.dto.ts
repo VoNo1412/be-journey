@@ -11,6 +11,7 @@ export class CreateTaskDto {
     categoryId: number;
 
     @ApiProperty()
+    @IsNumber()
     userId: number;
 
     @ApiProperty({ default: null })

@@ -10,9 +10,19 @@ export class TaskUser extends BaseEntity {
 
   @Column({ type: 'enum', enum: ['Pending', 'In Progress', 'Completed'], default: 'Pending' })
   status: string;
-  
+
   @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "assignById" })
   assignBy: User; // người giao
+
+  @Column({ nullable: true })
+  assignById: number
+
+  @Column({ nullable: true })
+  userId: number;
+
+  @Column({ nullable: true })
+  taskId: number;
 
   @ManyToOne(() => User, u => u.task_user, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' }) // người nhận

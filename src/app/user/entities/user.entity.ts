@@ -1,8 +1,10 @@
 import { TaskUser } from 'src/app/task/entities/task_user.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, Index } from 'typeorm';
 
 @Entity()
+@Index('IDX_user_isOnline', ['isOnline'])  // Index on 'isOnline' for faster queries
+@Index('IDX_user_lastSeen', ['lastSeen'])  // Index on 'lastSeen' for performance
 export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, unique: true })  // ✅ UNIQUE constraint
   username: string;
