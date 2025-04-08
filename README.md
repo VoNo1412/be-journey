@@ -20,7 +20,8 @@ A fullstack Habit Tracker web application that allows users to track and manage 
 - **Task Management:** 
   - Users can create tasks, set deadlines, assign priorities, and assign tasks to other users.
   - Admin or project managers can assign tasks to specific users.
-  - Users can track their assigned tasks, mark them as in progress, and complete the
+  - Users can track their assigned tasks, mark them as in progress, and complete 
+  - Follow all list to do and progress 
   
 - **API Integration:**
   - RESTful API endpoints are created with NestJS, ensuring efficient task and habit management.
