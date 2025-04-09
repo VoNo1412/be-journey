@@ -20,26 +20,34 @@ jobs:
 
     - name: Create .env file on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@52.221.208.107 << 'EOF'
-          cat > /home/ubuntu/be-journey/.env.production <<EOL
-          DB_HOST='${{ secrets.DB_HOST }}'
-          DB_PORT='${{ secrets.DB_PORT }}'
-          MYSQL_DATABASE='${{ secrets.MYSQL_DATABASE }}'
-          MYSQL_USER='${{ secrets.MYSQL_USER }}'
-          MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
-          PORT=3000
-          WS_PORT=3001
-          JWT_EXPRIES='${{ secrets.JWT_EXPRIES }}'
-          JWT_SECRET='${{ secrets.JWT_SECRET }}'
-          ENV=production
-          EOL
-        EOF
+        ssh -o StrictHostKeyChecking=no ubuntu@52.221.208.107 << EOF
+          export DB_HOST='${{ secrets.DB_HOST }}'
+          export DB_PORT='${{ secrets.DB_PORT }}'
+          export MYSQL_DATABASE='${{ secrets.MYSQL_DATABASE }}'
+          export MYSQL_USER='${{ secrets.MYSQL_USER }}'
+          export MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
+          export JWT_EXPRIES='${{ secrets.JWT_EXPRIES }}'
+          export JWT_SECRET='${{ secrets.JWT_SECRET }}'
+
+        cat > /home/ubuntu/be-journey/.env.production <<'EOL'
+            DB_HOST=${DB_HOST}
+            DB_PORT=${DB_PORT}
+            MYSQL_DATABASE=${MYSQL_DATABASE}
+            MYSQL_USER=${MYSQL_USER}
+            MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            PORT=3000
+            WS_PORT=3001
+            JWT_EXPRIES=${JWT_EXPRIES}
+            JWT_SECRET=${JWT_SECRET}
+            ENV=production
+            EOL
+          EOF
 
     - name: Deploy to EC2 via SSH
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@52.221.208.107 << 'EOF'
           cd /home/ubuntu/be-journey
           git pull origin master
-          docker-compose down
-          docker-compose up -d --build
+          sudo docker-compose down
+          sudo docker-compose up -d --build
         EOF
