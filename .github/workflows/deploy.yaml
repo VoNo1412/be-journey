@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-    - '.github/workflows/deploy.yml'   # Khi thay đổi file workflow này
-    - '**/*.ts'                         # Khi có bất kỳ file .ts nào bị thay đổi (source code)
-    - 'docker-compose.yml'             # Khi thay đổi docker-compose
-    - '!README.md'                     # Tránh trigger khi chỉ thay đổi README.md
 
 jobs:
   deploy:
