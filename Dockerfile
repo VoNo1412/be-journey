@@ -1,23 +1,30 @@
-# Use Node.js 20 (Debian-based for better compatibility)
-FROM node:20 
+# Stage 1: Build the application
+FROM node:20-alpine AS builder
 
-# Set working directory
-WORKDIR /app 
+WORKDIR /app
 
-# Copy only package.json and package-lock.json to leverage Docker caching
-COPY package*.json ./ 
+# Install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Install dependencies (without copying node_modules)
-RUN npm install 
+# Copy the source code
+COPY . .
 
-# Copy the rest of the application code
-COPY . . 
+# Build the NestJS app
+RUN npm run build
 
-# Build the app
-RUN npm run build 
+# Stage 2: Run the app
+FROM node:20-alpine
 
-# Expose the application port
-EXPOSE 3000 
+WORKDIR /app
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Copy only necessary files from build stage
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+# Expose the port NestJS runs on
+EXPOSE 3000
+
+# Start the app
+CMD ["node", "dist/main"]
