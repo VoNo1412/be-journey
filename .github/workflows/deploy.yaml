@@ -1,4 +1,4 @@
-name: Deploy NestJS to EC2
+name: Deploy NestJS to EC2 using Docker Hub
 
 on:
   push:
@@ -13,35 +13,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest
+
     - name: Setup SSH Agent
       uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.BE_AWS_KEY }}
 
-    - name: Create .env.production locally
-      run: |
-        cat > .env.production <<EOF
-        DB_HOST=${{ secrets.DB_HOST }}
-        DB_PORT=${{ secrets.DB_PORT }}
-        MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-        MYSQL_USER=${{ secrets.MYSQL_USER }}
-        MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-        PORT=3000
-        WS_PORT=3001
-        JWT_EXPRIES=${{ secrets.JWT_EXPRIES }}
-        JWT_SECRET=${{ secrets.JWT_SECRET }}
-        ENV=production
-        EOF
-
-    - name: Copy .env.production to EC2
-      run: |
-        scp -o StrictHostKeyChecking=no .env.production ubuntu@52.221.208.107:/home/ubuntu/be-journey/.env.production
-
-    - name: Deploy to EC2 via SSH
+    - name: Deploy on EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@52.221.208.107 << 'EOF'
-          cd /home/ubuntu/be-journey
-          git pull origin master
-          sudo docker-compose down
-          sudo docker-compose up -d --build
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest
+          sudo docker stop be-nest-app || true
+          sudo docker rm be-nest-app || true
+          sudo docker run -d \
+            --name be-nest-app \
+            --env-file /home/ubuntu/be-journey/.env.production \
+            -p 3000:3000 \
+            ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest
         EOF
