@@ -32,7 +32,7 @@ export class AuthService {
         access_token: jwt,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
     }
   }
 
