@@ -26,7 +26,8 @@ export class AuthService {
     try {
       const user = await this.userService.findUser(body.username);
       const jwt = await this.jwtService.signAsync({ payload: user }, { secret: this.configService.get<string>("JWT_SECRET") });
-
+      if (!jwt) throw new HttpException("Token not found", HttpStatus.UNAUTHORIZED);
+      
       return {
         ...user,
         access_token: jwt,
