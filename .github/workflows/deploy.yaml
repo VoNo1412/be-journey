@@ -30,10 +30,6 @@ jobs:
       run: |
           ssh -o StrictHostKeyChecking=no ubuntu@52.221.208.107 << 'EOF'          
             set -e
-            echo "Pulling latest image..."
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/be-nest-app:${TAG}
-            
-            echo "Stopping and removing old container (if any)..."
             # Remove old containers if they exist
             sudo docker stop be-nest-app || true
             sudo docker rm be-nest-app || true
