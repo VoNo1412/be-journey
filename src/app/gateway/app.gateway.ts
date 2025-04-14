@@ -5,24 +5,24 @@ import { NotificationGateway } from './notification/notification.gateway';
 
 @WebSocketGateway({ namespace: "ws" })
 export class AppGateway {
-  constructor(private readonly userGateway: UserGateway,
-    private readonly notificationGateway: NotificationGateway
+    constructor(private readonly userGateway: UserGateway,
+        private readonly notificationGateway: NotificationGateway
 
-  ) { }
-  @WebSocketServer() server: Server;
+    ) { }
+    @WebSocketServer() server: Server;
 
-  async handleConnection(client: Socket) {
-    this.userGateway.server = this.server; // Assign server instance to UserGateway
-    this.notificationGateway.server = this.server;
-    this.userGateway.handleConnection(client); // Delegate to UserGateway
+    async handleConnection(client: Socket) {
+        this.userGateway.server = this.server; // Assign server instance to UserGateway
+        this.notificationGateway.server = this.server;
+        this.userGateway.handleConnection(client); // Delegate to UserGateway
+        
+    }
 
-  }
+    async handleDisconnect(client: Socket) {
+        this.userGateway.server = this.server; // Assign server instance to UserGateway
+        this.notificationGateway.server = this.server;
+        this.userGateway.handleDisconnect(client); // Delegate to UserGateway
+    }
 
-  async handleDisconnect(client: Socket) {
-    this.userGateway.server = this.server; // Assign server instance to UserGateway
-    this.notificationGateway.server = this.server;
-    this.userGateway.handleDisconnect(client); // Delegate to UserGateway
-  }
-
-
+    
 }

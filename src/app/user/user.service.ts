@@ -56,9 +56,38 @@ export class UserService {
 
   async getAllUser(userId: number) {
     try {
-      const user = await this.userRepository.find({where: { id: Not(userId) }});
+      const user = await this.userRepository.find({ where: { id: Not(userId) } });
       if (!user.length) return [];
-      return user?.map(x => ({ userId: x.id, username: x.username, avatar: x.avatar, status: x.isOnline, lastSeen: x.lastSeen }));
+      const formatLastSeen = (lastSeen: Date) => {
+        const date = new Date(lastSeen);
+        const now = new Date();
+
+        const isSameDay = (d1: Date, d2: Date) =>
+          d1.getDate() === d2.getDate() &&
+          d1.getMonth() === d2.getMonth() &&
+          d1.getFullYear() === d2.getFullYear();
+
+        const isYesterday = (d1: Date, d2: Date) => {
+          const yesterday = new Date(d2);
+          yesterday.setDate(d2.getDate() - 1);
+          return isSameDay(d1, yesterday);
+        };
+
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+
+        if (isSameDay(date, now)) {
+          return `Today at ${hours}:${minutes}`;
+        } else if (isYesterday(date, now)) {
+          return `Yesterday at ${hours}:${minutes}`;
+        } else {
+          const day = date.getDate().toString().padStart(2, '0');
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          return `${day}/${month} at ${hours}:${minutes}`;
+        }
+      };
+
+      return user?.map(x => ({ userId: x.id, username: x.username, avatar: x.avatar, status: x.isOnline, lastSeen: formatLastSeen(x.lastSeen) }));
     } catch (error) {
       throw new HttpException(error, HttpStatus.NOT_FOUND);
     }
