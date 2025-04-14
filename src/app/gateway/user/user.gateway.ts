@@ -4,12 +4,10 @@ import {
     OnGatewayConnection,
     OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { UserService } from 'src/app/user/user.service';
 
-@WebSocketGateway({ cors: true })
-@Injectable()
+@WebSocketGateway({ namespace: "user", cors: true })
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     public server: Server;
