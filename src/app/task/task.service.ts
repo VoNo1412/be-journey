@@ -183,9 +183,8 @@ export class TaskService {
     }
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    await this.taskRepository.update(id, updateTaskDto);
-    return this.findOne(id);
+  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<any> {
+    return await this.taskUserRepository.update(id, updateTaskDto);
   }
 
   async deleteTask(id: number): Promise<void> {
