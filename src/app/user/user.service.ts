@@ -8,8 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment-timezone';
 
-
-
 @Injectable()
 export class UserService {
   constructor(

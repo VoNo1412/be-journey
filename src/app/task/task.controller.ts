@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateAssigntedTaskDto, CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { CreateSubTaskDto } from './dto/create-subtask';
@@ -9,9 +9,14 @@ import { CreateSubTaskDto } from './dto/create-subtask';
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
-  @Post()
+  @Post('me')
   create(@Body() createTaskDto: CreateTaskDto) {
-    return this.taskService.createUserTask(createTaskDto);
+    return this.taskService.createTask(createTaskDto);
+  }
+
+  @Post('assigned')
+  creatTaskForUser(@Body() dto: CreateAssigntedTaskDto) {
+    return this.taskService.createAssignedUser(dto);
   }
 
   @Get('sub/:userId')

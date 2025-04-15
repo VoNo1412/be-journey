@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateAssigntedTaskDto, CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UserService } from '../user/user.service';
 import { CreateSubTaskDto } from './dto/create-subtask';
@@ -9,11 +9,8 @@ import convertToVietnamTime from 'src/common/time';
 import { Task } from './entities/task.entity';
 import { TaskUser } from './entities/task_user.entity';
 import { SubTask } from './entities/subtask.entity';
-import { CategoryService } from '../category/category.service';
 import { NotificationService } from '../gateway/notification/notification.service';
-import { NotificationType } from '../gateway/notification/entities/notification.entity';
-import { Category } from '../category/entities/category.entity';
-import { User } from '../user/entities/user.entity';
+
 
 @Injectable()
 export class TaskService {
@@ -22,8 +19,8 @@ export class TaskService {
     @InjectRepository(TaskUser) private readonly taskUserRepository: Repository<TaskUser>,
     @InjectRepository(SubTask) private readonly subTaskRepository: Repository<SubTask>,
     private readonly userService: UserService,
-    private readonly categoryService: CategoryService,
     private readonly notificationService: NotificationService,
+
   ) { }
 
   async getAllSubTask(userId: number) {
@@ -91,30 +88,39 @@ export class TaskService {
     }
   }
 
-  async createUserTask(createTaskDto: CreateTaskDto): Promise<any> {
+  async createAssignedUser(dto: CreateAssigntedTaskDto) {
     try {
-      const { title, categoryId, userId, assignUserId } = createTaskDto;
+      const { title, categoryId, assignedUser, assignById } = dto;
+      if (!assignedUser.length) {
+        throw new HttpException("Not user to assign", HttpStatus.NOT_FOUND);
+      }
       const task = this.taskRepository.create({ title, categoryId });
       const newTask = await this.taskRepository.save(task);
 
+      return await this.taskUserRepository
+        .createQueryBuilder()
+        .insert()
+        .into(TaskUser)
+        .values(assignedUser.map(id => ({
+          taskId: newTask.id,
+          assignById,
+          userId: id,
+        })))
+        .execute();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async createTask(createTaskDto: CreateTaskDto): Promise<any> {
+    try {
+      const { title, categoryId, userId } = createTaskDto;
+      const task = this.taskRepository.create({ title, categoryId });
+      const newTask = await this.taskRepository.save(task);
       const taskUser = this.taskUserRepository.create({
         taskId: newTask.id,
         userId,
-        assignById: assignUserId
       });
-
-      if (userId && assignUserId) {
-        await this.notificationService.create({
-          taskId: newTask.id,
-          senderId: taskUser.assignById,
-          recipientId: userId,
-          type: NotificationType.TASK_ASSIGNED,
-          isRead: false,
-          title: newTask.title,
-          message: "You have a new task todo"
-        })
-      }
-
       const newTaskUser = await this.taskUserRepository.save(taskUser);
       return { statusCode: HttpStatus.OK, data: { ...newTaskUser, taskId: newTask.id, } };
     } catch (error) {
@@ -122,13 +128,11 @@ export class TaskService {
     }
   }
 
-
-
   async getTaskByUser(userId: number): Promise<any> {
     try {
-      const tasks = await this.taskRepository
-        .createQueryBuilder('task') // Main entity: 'task'
-        .innerJoinAndSelect('task.task_user', 'task_user') // Join task_user relation
+      const taskUser = await this.taskUserRepository
+        .createQueryBuilder('task_user') // Main entity: 'task'
+        .innerJoinAndSelect('task_user.task', 'task') // Join task_user relations
         .leftJoinAndSelect('task.category', 'category') // Join category
         .leftJoinAndSelect('task.subtask', 'subtask') // Join subtask
         .leftJoinAndSelect('task_user.assignBy', 'assignBy') // Join subtask
@@ -137,41 +141,41 @@ export class TaskService {
         .andWhere('task_user.userId = :userId OR task_user.assignById = :userId', { userId })
         .getMany();
 
-      const normalizedData = tasks.map(task => this.normalizeTask(task, userId));
-
-      return { status: HttpStatus.OK, data: normalizedData };
+      const notifications = await this.notificationService.getNotificationsByUser(userId);
+      const normalizedData = taskUser.map(tu => this.normalizeTask(tu, userId));
+      return { status: HttpStatus.OK, data: normalizedData, notifications };
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      throw new Error("Failed to fetch tasks.");
+      throw new HttpException("Failed to fetch tasks.", HttpStatus.BAD_REQUEST);
     }
   }
 
   /**
    * Helper function to normalize task data
    */
-  private normalizeTask(task: any, userId: number) {
+  private normalizeTask(taskUser: any, userId: number) {
     let checkTrueName = {};
-    if (userId == task?.task_user[0]?.assignBy?.id) {
-      checkTrueName["username"] = task?.task_user[0]?.user?.username;
-      checkTrueName["avatar"] = task?.task_user[0]?.user?.avatar;
+    if (userId == taskUser.assignBy?.id) {
+      checkTrueName["username"] = taskUser.user?.username;
+      checkTrueName["avatar"] = taskUser.user?.avatar;
     } else {
-      checkTrueName["username"] = task?.task_user[0]?.assignBy?.username;
-      checkTrueName["avatar"] = task?.task_user[0]?.assignBy?.avatar;
+      checkTrueName["username"] = taskUser.assignBy?.username;
+      checkTrueName["avatar"] = taskUser.assignBy?.avatar;
     }
 
 
     return {
-      taskUserId: task?.task_user[0]?.id,
-      taskId: task.id,
-      title: task.title,
-      isCompleted: task?.task_user[0]?.isCompleted,
-      categoryId: task.category?.id,
-      color: task.category?.color,
-      nameCategory: task.category?.name,
-      createdAt: task?.createdAt,
-      time: convertToVietnamTime(task.createdAt),
+      taskUserId: taskUser.id,
+      taskId: taskUser.task.id,
+      title: taskUser.task.title,
+      isCompleted: taskUser.isCompleted,
+      categoryId: taskUser.task.category?.id,
+      color: taskUser.task.category?.color,
+      nameCategory: taskUser.task.category?.name,
+      createdAt: taskUser.task?.createdAt,
+      time: convertToVietnamTime(taskUser.createdAt),
       assigned: checkTrueName,
-      subTasks: task.subtask,
+      subTasks: taskUser.task.subtask,
     };
   }
 

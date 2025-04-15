@@ -13,7 +13,22 @@ export class CreateTaskDto {
     @ApiProperty()
     @IsNumber()
     userId: number;
+}
+
+export class CreateAssigntedTaskDto {
+    @ApiProperty()
+    @IsString()
+    title: string;
+
+    @ApiProperty()
+    @IsNumber()
+    categoryId: number;
+
+    @ApiProperty()
+    assignedUser: number[];
 
     @ApiProperty({ default: null })
-    assignUserId: number;
+    assignById: number;
 }
+
+

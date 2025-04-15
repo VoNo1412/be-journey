@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "src/common/entities/base.entity";
 import { User } from "src/app/user/entities/user.entity";
 import { Task } from "./task.entity";
+import { Notification } from "src/app/gateway/notification/entities/notification.entity";
 
 @Entity()
 export class TaskUser extends BaseEntity {
@@ -31,5 +32,8 @@ export class TaskUser extends BaseEntity {
   @ManyToOne(() => Task, (task) => task.task_user, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'taskId' }) // Explicitly define the foreign key column
   task: Task
+
+  @OneToMany(() => Notification, n => n.taskUser)
+  notifications: Notification[];
 }
 

@@ -7,6 +7,10 @@ export class CreateNotificationDto {
     @ApiProperty()
     taskId: number;
 
+    @IsNumber()
+    @ApiProperty()
+    taskUserId: number;
+
     @IsString()
     @ApiProperty()
     title: string;
