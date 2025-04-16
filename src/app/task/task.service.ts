@@ -112,21 +112,29 @@ export class TaskService {
     }
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<any> {
+  async createTask(createTaskDto: CreateTaskDto): Promise<{ statusCode: number; data: any }> {
+    const { title, categoryId, userId } = createTaskDto;
+  
     try {
-      const { title, categoryId, userId } = createTaskDto;
-      const task = this.taskRepository.create({ title, categoryId });
-      const newTask = await this.taskRepository.save(task);
-      const taskUser = this.taskUserRepository.create({
-        taskId: newTask.id,
+      const task = await this.taskRepository.save({ title, categoryId });
+  
+      const taskUser = await this.taskUserRepository.save({
+        taskId: task.id,
         userId,
       });
-      const newTaskUser = await this.taskUserRepository.save(taskUser);
-      return { statusCode: HttpStatus.OK, data: { ...newTaskUser, taskId: newTask.id, } };
+  
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          taskId: task.id,
+          userId: taskUser.userId,
+        },
+      };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
   async getTaskByUser(userId: number): Promise<any> {
     try {
@@ -194,6 +202,15 @@ export class TaskService {
   async deleteTask(id: number): Promise<void> {
     try {
       await this.taskRepository.delete(id);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async deleteTaskUser(id: number): Promise<any> {
+    try {
+      console.log('run inside here', id);
+      return await this.taskUserRepository.delete(id);
     } catch (error) {
       throw new Error(error);
     }
