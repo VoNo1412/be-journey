@@ -21,11 +21,25 @@ export class AuthService {
     if (!checkPassword) throw new HttpException("Password is wrong", HttpStatus.UNAUTHORIZED);
     return user;
   }
+  async validateOAuthUser(profile: any): Promise<any> {
+    const { email, name, picture } = profile;
+    let user = await this.userService.findByEmail(email);
+    if (!user) {
+      user = await this.userService.create({
+        email,
+        username: name,
+        avatar: picture
+      });
+    }
 
+    return user;
+  }
+ 
   async login(body: LoginDto) {
     try {
       const user = await this.userService.findUser(body.username);
-      const jwt = await this.jwtService.signAsync({ payload: user }, { secret: this.configService.get<string>("JWT_SECRET") });
+      const payload = {...user}
+      const jwt = await this.jwtService.signAsync(payload, { secret: this.configService.get<string>("JWT_SECRET") });
       if (!jwt) throw new HttpException("Token not found", HttpStatus.UNAUTHORIZED);
       
       return {
@@ -35,6 +49,25 @@ export class AuthService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
     }
+  }
+
+  async loginGoogle(loginDto: LoginDto | any) {
+    // Validate credentials or OAuth2 user
+    const payload = { sub: loginDto.id, ...loginDto}; // Customize payload
+    return {
+      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+    };
+  }
+
+  async refresh(refreshToken: string) {
+    // Verify refresh token
+    // Generate new access and refresh tokens
+    const payload = await this.jwtService.verifyAsync(refreshToken);
+    return {
+      access_token: this.jwtService.sign({ sub: payload.sub, email: payload.email }, { expiresIn: '15m' }),
+      refresh_token: this.jwtService.sign({ sub: payload.sub, email: payload.email }, { expiresIn: '7d' }),
+    };
   }
 
   async signUp(user: LoginDto) {

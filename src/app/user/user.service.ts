@@ -108,4 +108,13 @@ export class UserService {
       throw new HttpException(error, HttpStatus.BAD_GATEWAY);
     }
   }
+
+  async findByEmail(email: string): Promise<any> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async create(userData: any): Promise<any> {
+    const user = this.userRepository.create({ ...userData });
+    return await this.userRepository.save(user);
+  }
 }

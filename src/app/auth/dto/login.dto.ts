@@ -8,6 +8,8 @@ class LoginDto {
   password: string;
 }
 
+class SignUpDto extends LoginDto{}
 export {
-  LoginDto
+  LoginDto,
+  SignUpDto
 }

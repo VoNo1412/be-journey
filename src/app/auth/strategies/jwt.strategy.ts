@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
  * @readonly JWT gồm 3 phần chính: Header, Payload, Signature 
       * @Header cách mã hóa
       * @Payload chứa data user (userId)
-      * @Signature đảm bảo token chưa bị sửa và được tạo bởi server có secret
+      * @Signature đảm bảo token 0 bị sửa và được tạo bởi server có secret
       * @SecretKey xác minh token có bị sửa đổi không.
  */
 
@@ -17,7 +17,11 @@ import { ConfigService } from '@nestjs/config';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.access_token || request?.cookies?.refresh_token || null;
+        },
+      ]), 
       ignoreExpiration: false,
       secretOrKey: configService.get<string>("JWT_SECRET") || 'defaultSecret'
     });

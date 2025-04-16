@@ -23,7 +23,12 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://fe-journey.onrender.com', 'http://3.0.139.123'], // Allow frontend URL
+    origin: [
+      'http://localhost:5173', 
+      'https://fe-journey.onrender.com', 
+      'http://3.0.139.123', 
+      'https://habitsocial.io.vn'
+    ], // Allow frontend URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
