@@ -7,7 +7,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UserService } from 'src/app/user/user.service';
 
-@WebSocketGateway({ namespace: "user", cors: true })
+@WebSocketGateway({ cors: true, path: '/user' })
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     public server: Server;
