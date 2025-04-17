@@ -1,8 +1,13 @@
-# Link website: http://3.0.139.123/
-
+# [Link website: http://3.0.139.123/](https://habitsocial.io.vn/)
 # Habit Tracker – Fullstack Project
 
 A fullstack Habit Tracker web application that allows users to track and manage their habits. The application also includes task creation and assignment functionality for teams.
+HabitSocial aims to become a smart personal development companion that helps users set clear goals, track their progress, and stay motivated on long-term journeys — whether it's learning English, improving fitness, or building habits.
+The platform bridges the gap for people who often feel lost at the starting point, lack structured plans, or can’t afford expensive coaching services, by offering a free, guided, and measurable roadmap built on the SMART goal-setting methodology.
+
+Through detailed milestone tracking, real-time status updates, and flexible planning tools, HabitSocial empowers individuals to follow their journey with clarity, accountability, and persistence.
+
+
 
 ## Technologies Used
 
