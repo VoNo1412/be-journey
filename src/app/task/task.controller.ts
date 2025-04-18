@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, HttpStatus } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateAssigntedTaskDto, CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateSubTaskDto } from './dto/create-subtask';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('task')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
   @Post('me')
+  @ApiOperation({ summary: 'Created new task for user' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Created task success' })
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.createTask(createTaskDto);
   }

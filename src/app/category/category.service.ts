@@ -22,20 +22,4 @@ export class CategoryService {
   async findAll() {
     return await this.categoryRepository.find();
   }
-
-  async findOne(id: number) {
-    try {
-      return await this.categoryRepository.findOne({ where: { id } });
-    } catch (error) {
-      throw new Error(error);     
-    }
-  }
-
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} category`;
-  }
 }

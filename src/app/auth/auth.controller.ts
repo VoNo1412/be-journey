@@ -20,13 +20,15 @@ import { UserService } from '../user/user.service';
 import { CookieDecorator } from 'src/common/decorator/cookie.decorator';
 import { JwtService } from '@nestjs/jwt';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) { }
 
   @Post('signup')
@@ -50,8 +52,13 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
       const data = await this.authService.login(loginDto);
-      res.cookie('access_token', data.access_token, { httpOnly: true, secure: false });
-      res.json({ user: data, access_token: data.access_token, statusCode: HttpStatus.OK });
+      res.cookie(
+        'access_token', 
+        data.access_token, 
+        { httpOnly: true, 
+          secure: this.configService.get<string>("NODE_ENV") === "production" 
+        });
+      res.json({ user: data, statusCode: HttpStatus.OK });
     } catch (error) {
       throw new HttpException(
         error.message || 'Login failed',
@@ -141,13 +148,13 @@ export class AuthController {
       const { access_token, refresh_token } = await this.authService.loginGoogle(user);
       res.cookie('access_token', access_token, {
         httpOnly: true,
-        secure: false,
+        secure: this.configService.get<string>("NODE_ENV") === "production",
         sameSite: "lax",
         maxAge: 15 * 60 * 1000,
       });
       res.cookie('refresh_token', refresh_token, {
         httpOnly: true,
-        secure: false,
+        secure: this.configService.get<string>("NODE_ENV") === "production",        
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });

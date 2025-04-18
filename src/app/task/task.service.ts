@@ -116,25 +116,25 @@ export class TaskService {
     const { title, categoryId, userId } = createTaskDto;
   
     try {
-      const task = await this.taskRepository.save({ title, categoryId });
-  
-      const taskUser = await this.taskUserRepository.save({
-        taskId: task.id,
+      const task = await this.taskRepository.insert({ title, categoryId });
+      const taskId = task.identifiers[0].id;
+      await this.taskUserRepository.insert({
+        taskId,
         userId,
       });
-  
+
       return {
         statusCode: HttpStatus.OK,
         data: {
-          taskId: task.id,
-          userId: taskUser.userId,
+          taskId: taskId,
+          userId,
         },
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
 
   async getTaskByUser(userId: number): Promise<any> {
     try {
