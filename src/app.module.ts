@@ -9,6 +9,7 @@ import { CategoryModule } from './app/category/category.module';
 import { AuthModule } from './app/auth/auth.module';
 import { GatewayModule } from './app/gateway/gateway.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { UploadModule } from './app/upload/upload.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     DatabaseModule,
     AuthModule,
     GatewayModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

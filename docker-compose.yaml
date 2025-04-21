@@ -3,12 +3,9 @@ services:
     build: .
     ports:
       - "3000:3000"
-      - "3001:3001"
     volumes:
       - .:/app
       - /app/node_modules
     env_file:
       - .env.production
-    environment:
-      - NODE_ENV=production
     command: npm run start:prod
