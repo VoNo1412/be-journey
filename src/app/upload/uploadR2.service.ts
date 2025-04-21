@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import * as dayjs from 'dayjs'; // npm i dayjs
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class R2Service {

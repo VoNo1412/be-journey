@@ -15,7 +15,7 @@ Through detailed milestone tracking, real-time status updates, and flexible plan
 - **Backend:** NestJS, TypeORM
 - **Database:** MySQL (via TypeORM)
 - **Containerization:** Docker
-- **Cloud Hosting:** AWS EC2
+- **Cloud Hosting:** AWS(EC2, S3), cloudflare(R2)
 - **Process Management:** PM2
 - **API Documentation:** Swagger
 - **Reverse Proxy:** NGINX
