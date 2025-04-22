@@ -8,19 +8,21 @@ import {
 export class ParseFileWithMaxSizePipe implements PipeTransform {
     constructor(private maxSizeInMB: number) { }
 
-    transform(file: Express.Multer.File) {
-        const maxSizeInBytes = this.maxSizeInMB * 1024 * 1024;
-
-        if (!file) {
-            throw new BadRequestException('No file uploaded');
+    transform(files: Express.Multer.File[]) {
+        if (!files || files.length === 0) {
+            throw new BadRequestException('No files uploaded');
         }
 
-        if (file.size > maxSizeInBytes) {
-            throw new BadRequestException(
-                `File size exceeds the maximum allowed size of ${this.maxSizeInMB}MB`,
-            );
+        const maxSizeBytes = this.maxSizeInMB * 1024 * 1024;
+
+        for (const file of files) {
+            if (file.size > maxSizeBytes) {
+                throw new BadRequestException(
+                    `File "${file.originalname}" exceeds the maximum size of ${this.maxSizeInMB}MB`,
+                );
+            }
         }
 
-        return file;
+        return files;
     }
 }

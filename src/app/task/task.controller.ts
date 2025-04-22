@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, HttpStatus, HttpException } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateAssigntedTaskDto, CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -31,7 +31,11 @@ export class TaskController {
 
   @Post("sub")
   createSubTask(@Body() dto: CreateSubTaskDto) {
-    return this.taskService.createSubTask(dto);
+    try {
+      return this.taskService.createSubTask(dto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+    }
   }
 
   @Delete("sub/:id")

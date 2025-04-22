@@ -1,7 +1,8 @@
 
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "src/common/entities/base.entity";
 import { Task } from "./task.entity";
+import { File } from "src/app/upload/entites/files.entity";
 
 @Entity()
 export class SubTask extends BaseEntity {
@@ -21,6 +22,9 @@ export class SubTask extends BaseEntity {
   taskId: number;
 
   @ManyToOne(() => Task, (t) => t.subtask, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'task_id' })
+  @JoinColumn({ name: 'taskId' })
   task: Task;
+
+  @OneToMany(() => File, f => f.subTask, { nullable: false, onDelete: 'CASCADE' })
+  files: File[];
 }

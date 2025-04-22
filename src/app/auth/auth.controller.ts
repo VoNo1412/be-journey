@@ -53,10 +53,11 @@ export class AuthController {
     try {
       const data = await this.authService.login(loginDto);
       res.cookie(
-        'access_token', 
-        data.access_token, 
-        { httpOnly: true, 
-          secure: this.configService.get<string>("NODE_ENV") === "production" 
+        'access_token',
+        data.access_token,
+        {
+          httpOnly: true,
+          secure: this.configService.get<string>("NODE_ENV") === "production"
         });
       res.json({ user: data, statusCode: HttpStatus.OK });
     } catch (error) {
@@ -154,7 +155,7 @@ export class AuthController {
       });
       res.cookie('refresh_token', refresh_token, {
         httpOnly: true,
-        secure: this.configService.get<string>("NODE_ENV") === "production",        
+        secure: this.configService.get<string>("NODE_ENV") === "production",
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });

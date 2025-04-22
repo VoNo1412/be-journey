@@ -72,7 +72,7 @@ export class TaskService {
       const newSubTask = await this.subTaskRepository.save(subTask);
       const user = await this.userService.findUserById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
       // const userSubTask = this.subTaskUserRepository.create({
@@ -83,8 +83,8 @@ export class TaskService {
       // Save the subtask to the database
       return newSubTask;
     } catch (error) {
-      throw new Error(error);
-
+      console.log("this is err", error);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -145,6 +145,7 @@ export class TaskService {
         .leftJoinAndSelect('task.subtask', 'subtask') // Join subtask
         .leftJoinAndSelect('task_user.assignBy', 'assignBy') // Join subtask
         .leftJoinAndSelect('task_user.user', 'user')
+        .leftJoinAndSelect('subtask.files', 'files')
         .where('task.deleteAt IS NULL')
         .andWhere('task_user.userId = :userId OR task_user.assignById = :userId', { userId })
         .getMany();
