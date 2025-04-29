@@ -21,6 +21,7 @@ export class AuthService {
     if (!checkPassword) throw new HttpException("Password is wrong", HttpStatus.UNAUTHORIZED);
     return user;
   }
+  
   async validateOAuthUser(profile: any): Promise<any> {
     const { email, name, picture } = profile;
     let user = await this.userService.findByEmail(email);

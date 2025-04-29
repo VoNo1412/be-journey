@@ -9,3 +9,12 @@ services:
     env_file:
       - .env.production
     command: npm run start:prod
+  redis:
+    image: "redis:alpine"  # Use the official Redis image
+    ports:
+      - "6379:6379"  # Expose Redis on port 6379
+    volumes:
+      - redis-data:/data  # Optional: Persist Redis data
+      
+volumes:
+  redis-data:

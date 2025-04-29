@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './uploadS3.service';
 import { R2Service } from './uploadR2.service';
 import { ParseFileWithMaxSizePipe } from 'src/common/pipes/uploadFileMaxSize';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CustomFilesInterceptor } from 'src/common/interceptor/max_file_upload';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -43,5 +44,28 @@ export class UploadController {
     @Body() body: any, // hoặc number nếu bạn ép kiểu
   ) {
     return this.r2Service.uploadFilesR2(files, body);
+  }
+
+  @Post('multi-queue')
+  @UseInterceptors(
+    new CustomFilesInterceptor("files", 10)
+  )
+  async queueUploadFiles(
+    @UploadedFiles(new ParseFileWithMaxSizePipe(20)) files: Express.Multer.File[],
+    @Body() body: any, // hoặc number nếu bạn ép kiểu
+  ) {
+    const jobIds = await this.r2Service.addFilesToQueue(files, body);
+    return {
+      message: 'Files queued for processing',
+      jobIds,
+    };
+  }
+
+  @Post('jobs-status')
+  async getJobsStatus(@Body('jobIds') jobIds: string[]) {
+    if (!jobIds || !Array.isArray(jobIds) || jobIds.length === 0) {
+      throw new HttpException('jobIds must be a non-empty array', HttpStatus.BAD_REQUEST);
+    }
+    return await this.r2Service.getJobsStatus(jobIds);
   }
 }

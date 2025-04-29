@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './config/database/database.module';
@@ -24,12 +25,18 @@ import { UploadModule } from './app/upload/upload.module';
     AuthModule,
     GatewayModule,
     UploadModule,
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
 })
 export class AppModule implements NestModule {
-    configure(consumer: MiddlewareConsumer) {
-      consumer.apply(LoggerMiddleware).forRoutes("*")
-    }
- }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes("*")
+  }
+}

@@ -1,64 +1,243 @@
-# [Link website: (https://habitsocial.io.vn/)
-# Habit Tracker – Fullstack Project
 
-A fullstack Habit Tracker web application that allows users to track and manage their habits. The application also includes task creation and assignment functionality for teams.
-HabitSocial aims to become a smart personal development companion that helps users set clear goals, track their progress, and stay motivated on long-term journeys — whether it's learning English, improving fitness, or building habits.
-The platform bridges the gap for people who often feel lost at the starting point, lack structured plans, or can’t afford expensive coaching services, by offering a free, guided, and measurable roadmap built on the SMART goal-setting methodology.
+# HabitSocial - Habit Social Fullstack Project
 
-Through detailed milestone tracking, real-time status updates, and flexible planning tools, HabitSocial empowers individuals to follow their journey with clarity, accountability, and persistence.
+**HabitSocial** is a fullstack web application that helps users track habits, set goals, and stay motivated on their personal development journeys. From learning new skills to improving fitness, it offers a free, structured roadmap based on the SMART goal-setting methodology. The platform also supports team collaboration through task creation and assignment.
 
+HabitSocial empowers users with clear plans, real-time progress tracking, and a user-friendly dashboard, making it ideal for those who struggle with starting or staying consistent without expensive coaching.
 
+👉 [Visit HabitSocial](#)
 
-## Technologies Used
+---
 
-- **Frontend:** ReactJS, Redux
-- **Backend:** NestJS, TypeORM
-- **Database:** MySQL (via TypeORM)
-- **Containerization:** Docker
-- **Cloud Hosting:** AWS(EC2, S3), cloudflare(R2)
-- **Process Management:** PM2
-- **API Documentation:** Swagger
-- **Reverse Proxy:** NGINX
+## ✨ Features
 
-## Features
+### 🔧 Core Features
 
-- **Task Management:** 
-  - Users can create tasks, set deadlines, assign priorities, and assign tasks to other users.
-  - Admin or project managers can assign tasks to specific users.
-  - Users can track their assigned tasks, mark them as in progress, and complete 
-  
-- **API Integration:**
-  - RESTful API endpoints are created with NestJS, ensuring efficient task and habit management.
-  - TypeORM is used to interact with the database in a type-safe manner, allowing seamless data management.
-  
-- **Authentication & Authorization:**
-  - Users can securely log in using JWT-based authentication.
-  - Role-based access control (RBAC) ensures only authorized users (e.g., admins or project managers) can assign tasks.
+#### 🗂️ Project Management
+- Create projects (e.g., _"Learn English"_, _"90-Day Workout"_) with titles, descriptions, and timelines.
+- Break projects into milestones for manageable progress.
 
-- **Process Management:**
-  - PM2 ensures the NestJS server remains up with high availability, automatic restarts, and smooth deployment on AWS EC2.
+#### ✅ Task Management
+- Add actionable tasks with deadlines, priorities, and statuses (`Not Started`, `In Progress`, `Done`).
+- Assign tasks to team members for collaborative projects.
+- Support subtasks for complex tasks.
 
-- **API Documentation:**
-  - Integrated Swagger for automatic API documentation, providing a clear interface for developers with detailed API endpoints, request/response schemas, and authentication methods.
+#### 🧭 Milestone Tracking
+- Group tasks under milestones (e.g., _"Master Alphabet Pronunciation"_).
+- Monitor milestone deadlines and completion.
 
-- **Reverse Proxy:**
-  - Configured NGINX as a reverse proxy to efficiently route traffic, enhance security, and improve performance for both the backend and frontend.
+#### 📊 Dashboard & Analytics
+- View progress with completion percentages and milestone achievements.
+- Track task completion rates via interactive charts.
 
-## Getting Started
+#### 👥 Team Collaboration
+- Assign tasks with role-based access (e.g., admins, project managers).
+- Real-time updates for team tasks.
+
+---
+
+## 🛠️ Technical Features
+
+- **Authentication**: Secure JWT-based login with role-based access control (RBAC).
+- **API**: RESTful APIs built with NestJS, documented via Swagger.
+- **Database**: Type-safe interactions using TypeORM and MySQL.
+- **Infrastructure**: AWS (EC2, S3), Cloudflare R2, NGINX reverse proxy, PM2 for process management.
+- **Containerization**: Docker for consistent environments.
+
+---
+
+## 🧱 Technologies Used
+
+| Layer      | Stack                          |
+|------------|---------------------------------|
+| Frontend   | ReactJS, Redux                  |
+| Backend    | NestJS, TypeORM                 |
+| Database   | MySQL                           |
+| Cloud      | AWS (EC2, S3), Cloudflare R2    |
+| DevOps     | Docker, PM2, NGINX              |
+| Docs       | Swagger                         |
+
+---
+
+## 🧩 Database Structure
+
+The schema is designed to manage users, projects, tasks, milestones, and assignments efficiently.
+
+### ER Diagram
+
+You can visualize the model via **[dbdiagram.io](https://dbdiagram.io/)** using the following DBML script:
+
+````dbml
+// DBML code here (as previously provided)
+Table User {
+  id int [pk]
+  username varchar(255) [unique]
+  email varchar(255) [unique]
+  password varchar(255)
+  avatar text
+  isOnline boolean [default: false]
+  lastSeen timestamp
+}
+
+Table Project {
+  id int [pk]
+  name varchar(255)
+  idea text
+  tab enum('TEAM', 'INDIVIDUAL') [default: 'TEAM']
+}
+
+Table Roadmap {
+  id int [pk]
+  title varchar(255)
+  description text
+  comment text
+  releaseDate date
+  projectId int [ref: > Project.id]
+}
+
+Table Task {
+  id int [pk]
+  title text
+  status enum('Pending', 'In Progress', 'Completed') [default: 'Pending']
+  categoryId int [ref: > Category.id]
+}
+
+Table SubTask {
+  id int [pk]
+  title text
+  description text
+  summarize text
+  status enum('Pending', 'In Progress', 'Completed') [default: 'Pending']
+  taskId int [ref: > Task.id]
+}
+
+Table Category {
+  id int [pk]
+  name enum('Work', 'Personal', 'Study', 'Other')
+  color text
+}
+
+Table TaskUser {
+  id int [pk]
+  isCompleted boolean [default: false]
+  status enum('Pending', 'In Progress', 'Completed') [default: 'Pending']
+  assignById int [ref: > User.id]
+  userId int [ref: > User.id]
+  taskId int [ref: > Task.id]
+}
+
+Table UserProject {
+  id int [pk]
+  userId int [ref: > User.id]
+  projectId int [ref: > Project.id]
+}
+````
+---
+
+## 🧪 Getting Started
 
 ### Prerequisites
+- Node.js (v14+)
+- Docker
+- MySQL
+- AWS account (optional)
 
-Before running the project locally, ensure you have the following installed:
-
-- Node.js (v14.x or higher)
-- Docker (for containerization)
-- MySQL (for database)
-- AWS account (for EC2 and deployment)
-
-### Installation
-
-1. Clone the repository:
+### Installation Steps
 
 ```bash
 git clone https://github.com/yourusername/habit-tracker.git
 cd habit-tracker
+npm install
+```
+
+Create a `.env` file:
+
+```env
+# Database config
+DB_HOST=
+DB_PORT=
+MYSQL_DATABASE=
+MYSQL_USER=
+MYSQL_PASSWORD=
+
+# Server config
+PORT=
+
+# JWT
+JWT_EXPRIES=
+JWT_SECRET=
+NODE_ENV=
+
+# Google OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CLIENT_CALLBACK=
+
+# Frontend
+FRONTEND_URL=
+
+# AWS
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_S3_BUCKET=
+
+# Cloudflare R2
+R2_S3_API=
+R2_CUSTOM_DOMAIN=
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_S3_BUCKET=
+```
+
+Run database migrations:
+
+```bash
+npm run typeorm:migration:run
+```
+
+Start the backend:
+
+```bash
+npm run start:dev
+```
+
+(Optional) Run with Docker:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## 🚀 Access Points
+
+- Backend API: `http://localhost:3000/api`
+- Swagger Docs: `http://localhost:3000/api/docs`
+
+---
+
+## 🔮 Future Improvements
+
+- Push notifications for deadlines and milestones
+- AI-driven habit suggestions
+- Gamification (badges, streaks)
+- Mobile app (iOS & Android)
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'Add your feature'`
+4. Push to your branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+## 📬 Contact
+
+Have questions, suggestions, or feedback?  
+Email us at [vuxuanhuy2k1@gmail.com](mailto:email@example.com) 
