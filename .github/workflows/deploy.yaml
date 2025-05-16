@@ -1,4 +1,4 @@
-name: Deploy NestJS to EC2 using Docker Hub
+name: 'DEPLOY'
 
 on:
   push:
@@ -7,50 +7,36 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+      runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u vonodev --password-stdin
+      - name: Login Docker hub
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u vonodev --password-stdin
 
-    - name: Build and Push Docker image
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest .
-        docker push ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest
+      - name: Build images and push code on Dockerhub
+        run: |
+            docker build -t ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest .
+            docker push ${{ secrets.DOCKER_USERNAME }}/be-nest-app:latest
+      
+      - name: Setup SSH Agent 
+        uses: webfactory/ssh-agent@v0.7.0
+        with: 
+          ssh-private-key: ${{ secrets.BE_AWS_KEY }}
 
-    - name: Setup SSH Agent
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.BE_AWS_KEY }}
-
-    - name: Clean up old Docker containers and images on EC2
-      run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@52.221.185.87 << 'EOF'          
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@52.221.185.87 << 'EOF'
             set -e
-            # Remove old containers if they exist
+            sudo docker pull vonodev/be-nest-app:latest
             sudo docker stop be-nest-app || true
             sudo docker rm be-nest-app || true
-            
-            echo "Running new container..."
-            # Clean up unused images and dangling containers to free space
-            sudo docker image prune -a -f
-            sudo docker container prune -f
-            sudo docker volume prune -f
+            sudo docker run -d \
+              --name be-nest-app \
+              --env-file /home/ubuntu/be-journey/.env.production \
+              -p 3000:3000 \
+              vonodev/be-nest-app:latest
           EOF
 
-    - name: Deploy on EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@52.221.185.87 << 'EOF'
-          set -e
-          sudo docker pull vonodev/be-nest-app:latest
-          sudo docker stop be-nest-app || true
-          sudo docker rm be-nest-app || true
-          sudo docker run -d \
-            --name be-nest-app \
-            --env-file /home/ubuntu/be-journey/.env.production \
-            -p 3000:3000 \
-            vonodev/be-nest-app:latest
-        EOF
